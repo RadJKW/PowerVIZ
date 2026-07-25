@@ -40,12 +40,11 @@
       }
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
-    html,
-    body {
+    [hidden] { display: none !important; }
+
+    html, body {
       width: 100%;
       height: 100%;
       margin: 0;
@@ -55,11 +54,7 @@
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
-    button,
-    input,
-    select {
-      font: inherit;
-    }
+    button, input, select { font: inherit; }
 
     button {
       border: 1px solid var(--border);
@@ -77,8 +72,7 @@
       outline-offset: 2px;
     }
 
-    input[type="number"],
-    select {
+    input[type="number"], select {
       min-width: 0;
       width: 100%;
       border: 1px solid var(--border);
@@ -107,10 +101,7 @@
       border-bottom: 1px solid var(--border);
     }
 
-    .view-tabs {
-      display: flex;
-      gap: 5px;
-    }
+    .view-tabs { display: flex; gap: 5px; }
 
     .view-button[aria-selected="true"],
     .control-button[aria-pressed="true"] {
@@ -118,6 +109,16 @@
       background: var(--accent);
       color: var(--accent-text);
     }
+
+    /* Phase tab base: colored border and text */
+    #openA { border-color: var(--phase-a); color: var(--phase-a); }
+    #openB { border-color: var(--phase-b); color: var(--phase-b); }
+    #openC { border-color: var(--phase-c); color: var(--phase-c); }
+
+    /* Phase tab selected: filled with phase color, dark/light text via --panel */
+    #openA[aria-pressed="true"] { background: var(--phase-a); color: var(--panel); border-color: var(--phase-a); }
+    #openB[aria-pressed="true"] { background: var(--phase-b); color: var(--panel); border-color: var(--phase-b); }
+    #openC[aria-pressed="true"] { background: var(--phase-c); color: var(--panel); border-color: var(--phase-c); }
 
     .animate-control {
       display: inline-flex;
@@ -127,10 +128,7 @@
       font-size: 14px;
     }
 
-    .animate-control input {
-      width: 18px;
-      height: 18px;
-    }
+    .animate-control input { width: 18px; height: 18px; }
 
     .visual-area {
       position: relative;
@@ -139,18 +137,12 @@
       border-bottom: 1px solid var(--border);
     }
 
-    .visual {
-      display: block;
-      width: 100%;
-      height: 100%;
-    }
+    .visual { display: block; width: 100%; height: 100%; }
 
     .metrics {
       position: absolute;
       z-index: 5;
-      top: 6px;
-      left: 7px;
-      right: 7px;
+      top: 6px; left: 7px; right: 7px;
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 3px;
@@ -161,23 +153,9 @@
       backdrop-filter: blur(7px);
     }
 
-    .metric {
-      min-width: 0;
-      padding: 3px 1px;
-      text-align: center;
-    }
-
-    .metric-label {
-      color: var(--muted);
-      font-size: 11px;
-    }
-
-    .metric-value {
-      font-size: 16px;
-      font-weight: 650;
-      white-space: nowrap;
-    }
-
+    .metric { min-width: 0; padding: 3px 1px; text-align: center; }
+    .metric-label { color: var(--muted); font-size: 11px; }
+    .metric-value { font-size: 16px; font-weight: 650; white-space: nowrap; }
     .metric-sub {
       overflow: hidden;
       color: var(--muted);
@@ -200,10 +178,7 @@
       gap: 5px;
     }
 
-    .control-button {
-      padding: 6px 8px;
-      font-size: 14px;
-    }
+    .control-button { padding: 6px 8px; font-size: 14px; }
 
     .control-head {
       display: flex;
@@ -213,20 +188,9 @@
       margin-top: 7px;
     }
 
-    .control-title {
-      font-size: 14px;
-      font-weight: 650;
-    }
-
-    .control-status {
-      color: var(--muted);
-      font-size: 11px;
-    }
-
-    .reset-button {
-      padding: 5px 8px;
-      font-size: 12px;
-    }
+    .control-title { font-size: 14px; font-weight: 650; }
+    .control-status { color: var(--muted); font-size: 11px; }
+    .reset-button { padding: 5px 8px; font-size: 12px; }
 
     .panel {
       display: grid;
@@ -234,8 +198,24 @@
       margin-top: 7px;
     }
 
-    .panel[hidden] {
-      display: none !important;
+    /* Subsection group within a phase panel */
+    .subsection-group { display: grid; gap: 5px; }
+
+    .subsection-head {
+      font-size: 11px;
+      font-weight: 650;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding-bottom: 3px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .no-pt-note {
+      font-size: 11px;
+      color: var(--muted);
+      font-style: italic;
+      padding: 1px 0 3px;
     }
 
     .field-row {
@@ -246,19 +226,9 @@
       font-size: 13px;
     }
 
-    .field-row.three {
-      grid-template-columns: 92px minmax(0, 1fr) 48px;
-    }
-
-    .field-row input[type="range"] {
-      width: 100%;
-      min-width: 0;
-    }
-
-    .output {
-      text-align: right;
-      white-space: nowrap;
-    }
+    .field-row.three { grid-template-columns: 92px minmax(0, 1fr) 48px; }
+    .field-row input[type="range"] { width: 100%; min-width: 0; }
+    .output { text-align: right; white-space: nowrap; }
 
     .setup-grid {
       display: grid;
@@ -275,25 +245,13 @@
       font-size: 12px;
     }
 
-    .pt-row {
-      display: grid;
-      grid-template-columns: 34px minmax(0, 1fr) minmax(0, 1fr);
-      align-items: center;
-      gap: 6px;
-      font-size: 12px;
-    }
-
     .preset-row {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 5px;
     }
 
-    .preset-row button {
-      min-width: 0;
-      padding: 6px 4px;
-      font-size: 11px;
-    }
+    .preset-row button { min-width: 0; padding: 6px 4px; font-size: 11px; }
 
     .diagnosis {
       overflow: hidden;
@@ -308,40 +266,14 @@
     }
 
     @media (max-width: 430px) {
-      .app {
-        grid-template-rows: auto minmax(0, 54fr) minmax(0, 46fr);
-      }
-
-      .topbar {
-        padding-left: 5px;
-        padding-right: 5px;
-      }
-
-      .view-button {
-        padding-left: 9px;
-        padding-right: 9px;
-      }
-
-      .animate-control {
-        font-size: 13px;
-      }
-
-      .controls {
-        padding: 6px;
-      }
-
-      .field-row,
-      .field-row.three {
-        grid-template-columns: 78px minmax(0, 1fr) 44px;
-      }
-
-      .field-row:not(.three) {
-        grid-template-columns: 78px minmax(0, 1fr);
-      }
-
-      .compact-field {
-        grid-template-columns: 66px minmax(0, 1fr);
-      }
+      .app { grid-template-rows: auto minmax(0, 54fr) minmax(0, 46fr); }
+      .topbar { padding-left: 5px; padding-right: 5px; }
+      .view-button { padding-left: 9px; padding-right: 9px; }
+      .animate-control { font-size: 13px; }
+      .controls { padding: 6px; }
+      .field-row, .field-row.three { grid-template-columns: 78px minmax(0, 1fr) 44px; }
+      .field-row:not(.three) { grid-template-columns: 78px minmax(0, 1fr); }
+      .compact-field { grid-template-columns: 66px minmax(0, 1fr); }
     }
   </style>
 </head>
@@ -350,10 +282,9 @@
     <header class="topbar">
       <div class="view-tabs" role="tablist" aria-label="Visualization">
         <button id="tabPhasor" type="button" class="view-button" aria-selected="true">Phasor</button>
-        <button id="tabSine" type="button" class="view-button" aria-selected="false">Sine</button>
-        <button id="tab3d" type="button" class="view-button" aria-selected="false">3D</button>
+        <button id="tabSine"   type="button" class="view-button" aria-selected="false">Sine</button>
+        <button id="tab3d"     type="button" class="view-button" aria-selected="false">3D</button>
       </div>
-
       <label class="animate-control">
         <input id="animate" type="checkbox">
         <span>Animate</span>
@@ -392,53 +323,87 @@
     </main>
 
     <section class="controls">
-      <div class="control-tabs" aria-label="Wiring controls">
-        <button id="openA" type="button" class="control-button" aria-pressed="true">IA CT</button>
-        <button id="openB" type="button" class="control-button" aria-pressed="false">IB CT</button>
-        <button id="openC" type="button" class="control-button" aria-pressed="false">IC CT</button>
-        <button id="openPT" type="button" class="control-button" aria-pressed="false">PT / Setup</button>
+      <!-- Phase tabs: color-coded, each covers that phase's V + I settings -->
+      <div class="control-tabs" aria-label="Phase wiring controls">
+        <button id="openA"  type="button" class="control-button" aria-pressed="true">Phase A</button>
+        <button id="openB"  type="button" class="control-button" aria-pressed="false">Phase B</button>
+        <button id="openC"  type="button" class="control-button" aria-pressed="false">Phase C</button>
+        <button id="openPT" type="button" class="control-button" aria-pressed="false">System</button>
       </div>
 
       <div class="control-head">
         <div>
-          <div id="controlTitle" class="control-title">Relay IA current input</div>
-          <div id="controlStatus" class="control-status">IA receives system phase A · normal polarity</div>
+          <div id="controlTitle" class="control-title">Phase A</div>
+          <div id="controlStatus" class="control-status">VA = AB · IA ← sys A</div>
         </div>
         <button id="reset" type="button" class="reset-button">Reset</button>
       </div>
 
-      <div id="ctPanel" class="panel">
-        <div class="field-row">
-          <label id="ctSourceLabel" for="ctSource">Current source</label>
-          <select id="ctSource">
-            <option value="A">System phase A</option>
-            <option value="B">System phase B</option>
-            <option value="C">System phase C</option>
-          </select>
+      <!-- Per-phase panel (A, B, C) -->
+      <div id="phasePanel" class="panel">
+
+        <!-- Voltage subsection — visible for Phase A and C only -->
+        <div id="ptSubsection" class="subsection-group">
+          <div class="subsection-head" id="ptSubLabel">Voltage — VA input</div>
+          <div class="field-row">
+            <label for="ptPair">PT primary</label>
+            <select id="ptPair">
+              <option value="AB">A → B (Vab)</option>
+              <option value="BA">B → A (Vba)</option>
+              <option value="BC">B → C (Vbc)</option>
+              <option value="CB">C → B (Vcb)</option>
+              <option value="CA">C → A (Vca)</option>
+              <option value="AC">A → C (Vac)</option>
+            </select>
+          </div>
+          <div class="field-row">
+            <label for="ptPolarity">PT secondary</label>
+            <select id="ptPolarity">
+              <option value="normal">Normal</option>
+              <option value="reversed">Reversed</option>
+            </select>
+          </div>
         </div>
 
-        <div class="field-row">
-          <label for="ctPolarity">CT polarity</label>
-          <select id="ctPolarity">
-            <option value="normal">Normal</option>
-            <option value="reversed">Reversed 180°</option>
-          </select>
+        <!-- Shown for Phase B only (no PT input in open-delta) -->
+        <div id="ptNoInput" class="no-pt-note" hidden>
+          VB — no direct PT input in open-delta configuration
         </div>
 
-        <div class="field-row three">
-          <label for="ctTrim">Angle trim</label>
-          <input id="ctTrim" type="range" min="-180" max="180" step="1" value="0">
-          <output id="ctTrimOutput" class="output">0°</output>
+        <!-- Current subsection — always visible within phase panel -->
+        <div class="subsection-group">
+          <div class="subsection-head" id="ctSubLabel">Current — IA input</div>
+          <div class="field-row">
+            <label id="ctSourceLabel" for="ctSource">IA source</label>
+            <select id="ctSource">
+              <option value="A">System phase A</option>
+              <option value="B">System phase B</option>
+              <option value="C">System phase C</option>
+            </select>
+          </div>
+          <div class="field-row">
+            <label for="ctPolarity">CT polarity</label>
+            <select id="ctPolarity">
+              <option value="normal">Normal</option>
+              <option value="reversed">Reversed 180°</option>
+            </select>
+          </div>
+          <div class="field-row three">
+            <label for="ctTrim">Angle trim</label>
+            <input id="ctTrim" type="range" min="-180" max="180" step="1" value="0">
+            <output id="ctTrimOutput" class="output">0°</output>
+          </div>
+          <div class="field-row three">
+            <label for="ctMagnitude">Magnitude</label>
+            <input id="ctMagnitude" type="range" min="0" max="1.5" step="0.05" value="1">
+            <output id="ctMagnitudeOutput" class="output">1.00</output>
+          </div>
         </div>
 
-        <div class="field-row three">
-          <label for="ctMagnitude">Magnitude</label>
-          <input id="ctMagnitude" type="range" min="0" max="1.5" step="0.05" value="1">
-          <output id="ctMagnitudeOutput" class="output">1.00</output>
-        </div>
-      </div>
+      </div><!-- /phasePanel -->
 
-      <div id="ptPanel" class="panel" hidden>
+      <!-- System panel (sequence, flow, true PF, presets) -->
+      <div id="systemPanel" class="panel" hidden>
         <div class="setup-grid">
           <label class="compact-field">
             <span>Sequence</span>
@@ -447,7 +412,6 @@
               <option value="ACB">ACB</option>
             </select>
           </label>
-
           <label class="compact-field">
             <span>Power flow</span>
             <select id="powerFlow">
@@ -455,12 +419,10 @@
               <option value="export">Generator export (−kW)</option>
             </select>
           </label>
-
           <label class="compact-field">
             <span>True PF</span>
             <input id="loadPf" type="number" min="0" max="1" step="0.01" value="0.04">
           </label>
-
           <label class="compact-field">
             <span>Reactive</span>
             <select id="reactiveDirection">
@@ -469,45 +431,12 @@
             </select>
           </label>
         </div>
-
-        <div class="pt-row">
-          <strong>VA</strong>
-          <select id="ptVaPair" aria-label="PT feeding relay VA input">
-            <option value="AB">A → B (Vab)</option>
-            <option value="BA">B → A (Vba)</option>
-            <option value="BC">B → C (Vbc)</option>
-            <option value="CB">C → B (Vcb)</option>
-            <option value="CA">C → A (Vca)</option>
-            <option value="AC">A → C (Vac)</option>
-          </select>
-          <select id="ptVaPolarity" aria-label="VA PT secondary polarity">
-            <option value="normal">Secondary normal</option>
-            <option value="reversed">Secondary reversed</option>
-          </select>
-        </div>
-
-        <div class="pt-row">
-          <strong>VC</strong>
-          <select id="ptVcPair" aria-label="PT feeding relay VC input">
-            <option value="AB">A → B (Vab)</option>
-            <option value="BA">B → A (Vba)</option>
-            <option value="BC">B → C (Vbc)</option>
-            <option value="CB">C → B (Vcb)</option>
-            <option value="CA">C → A (Vca)</option>
-            <option value="AC">A → C (Vac)</option>
-          </select>
-          <select id="ptVcPolarity" aria-label="VC PT secondary polarity">
-            <option value="normal">Secondary normal</option>
-            <option value="reversed">Secondary reversed</option>
-          </select>
-        </div>
-
         <div class="preset-row">
-          <button id="presetCorrect" type="button">Correct 469</button>
-          <button id="presetBcSwap" type="button">B↔C PT swap</button>
+          <button id="presetCorrect"  type="button">Correct 469</button>
+          <button id="presetBcSwap"   type="button">B↔C PT swap</button>
           <button id="presetObserved" type="button">Match −0.85</button>
         </div>
-      </div>
+      </div><!-- /systemPanel -->
 
       <div id="diagnosis" class="diagnosis">
         Wiring matches the normal GE 469 open-delta arrangement: VA = Vab, VC = Vcb, and all CT channels are correctly phased.
@@ -539,60 +468,26 @@
       }
     };
 
-    const rad = degrees => degrees * Math.PI / 180;
-    const deg = radians => radians * 180 / Math.PI;
-    const normalize = value => ((Number(value) % 360) + 360) % 360;
-    const signed = value => {
-      const n = normalize(value);
-      return n > 180 ? n - 360 : n;
-    };
+    const rad = d => d * Math.PI / 180;
+    const deg = r => r * 180 / Math.PI;
+    const normalize = v => ((Number(v) % 360) + 360) % 360;
+    const signed = v => { const n = normalize(v); return n > 180 ? n - 360 : n; };
 
-    function complex(re, im) {
-      return { re, im };
-    }
-
-    function polar(magnitude, angleDegrees) {
-      return complex(
-        magnitude * Math.cos(rad(angleDegrees)),
-        magnitude * Math.sin(rad(angleDegrees))
-      );
-    }
-
-    function add(a, b) {
-      return complex(a.re + b.re, a.im + b.im);
-    }
-
-    function subtract(a, b) {
-      return complex(a.re - b.re, a.im - b.im);
-    }
-
-    function scale(a, scalar) {
-      return complex(a.re * scalar, a.im * scalar);
-    }
-
-    function multiply(a, b) {
-      return complex(
-        a.re * b.re - a.im * b.im,
-        a.re * b.im + a.im * b.re
-      );
-    }
-
-    function conjugate(a) {
-      return complex(a.re, -a.im);
-    }
-
-    function magnitude(a) {
-      return Math.hypot(a.re, a.im);
-    }
+    const complex  = (re, im) => ({ re, im });
+    const polar    = (m, a)   => complex(m * Math.cos(rad(a)), m * Math.sin(rad(a)));
+    const add      = (a, b)   => complex(a.re + b.re, a.im + b.im);
+    const subtract = (a, b)   => complex(a.re - b.re, a.im - b.im);
+    const scale    = (a, s)   => complex(a.re * s, a.im * s);
+    const multiply = (a, b)   => complex(a.re*b.re - a.im*b.im, a.re*b.im + a.im*b.re);
+    const conjugate = a       => complex(a.re, -a.im);
+    const magnitude = a       => Math.hypot(a.re, a.im);
 
     function angle(a) {
       if (magnitude(a) < 1e-10) return 0;
       return normalize(deg(Math.atan2(a.im, a.re)));
     }
 
-    function phaseColor(phase) {
-      return `var(--phase-${phase.toLowerCase()})`;
-    }
+    const phaseColor = p => `var(--phase-${p.toLowerCase()})`;
 
     function phaseAngles() {
       return state.sequence === 'ABC'
@@ -601,499 +496,472 @@
     }
 
     function systemVoltages() {
-      const angles = phaseAngles();
-      return {
-        A: polar(1, angles.A),
-        B: polar(1, angles.B),
-        C: polar(1, angles.C)
-      };
+      const a = phaseAngles();
+      return { A: polar(1, a.A), B: polar(1, a.B), C: polar(1, a.C) };
     }
 
-    function lineVoltage(pair, voltages) {
-      return subtract(voltages[pair[0]], voltages[pair[1]]);
+    function lineVoltage(pair, v) {
+      return subtract(v[pair[0]], v[pair[1]]);
     }
 
     function trueCurrents() {
-      const angles = phaseAngles();
-      const clampedPf = Math.min(1, Math.max(0, Number(state.pf) || 0));
-      const displacement = deg(Math.acos(clampedPf));
-      const reactiveShift = state.reactive === 'lag' ? -displacement : displacement;
-      const flowShift = state.flow === 'export' ? 180 : 0;
-
+      const a = phaseAngles();
+      const pf = Math.min(1, Math.max(0, Number(state.pf) || 0));
+      const disp = deg(Math.acos(pf));
+      const rShift = state.reactive === 'lag' ? -disp : disp;
+      const fShift = state.flow === 'export' ? 180 : 0;
       return {
-        A: polar(1, angles.A + reactiveShift + flowShift),
-        B: polar(1, angles.B + reactiveShift + flowShift),
-        C: polar(1, angles.C + reactiveShift + flowShift)
+        A: polar(1, a.A + rShift + fShift),
+        B: polar(1, a.B + rShift + fShift),
+        C: polar(1, a.C + rShift + fShift)
       };
     }
 
     function relayCurrents() {
-      const source = trueCurrents();
-      const measured = {};
-
-      phases.forEach(channel => {
-        const settings = state.ct[channel];
-        let value = source[settings.source];
-
-        if (settings.polarity === 'reversed') {
-          value = scale(value, -1);
-        }
-
-        value = multiply(value, polar(settings.magnitude, settings.trim));
-        measured[channel] = value;
+      const src = trueCurrents();
+      const out = {};
+      phases.forEach(ch => {
+        const s = state.ct[ch];
+        let v = src[s.source];
+        if (s.polarity === 'reversed') v = scale(v, -1);
+        v = multiply(v, polar(s.magnitude, s.trim));
+        out[ch] = v;
       });
-
-      return measured;
+      return out;
     }
 
     function relayVoltages() {
-      const source = systemVoltages();
-
-      let va = lineVoltage(state.pt.VA.pair, source);
-      let vc = lineVoltage(state.pt.VC.pair, source);
-
+      const src = systemVoltages();
+      let va = lineVoltage(state.pt.VA.pair, src);
+      let vc = lineVoltage(state.pt.VC.pair, src);
       if (state.pt.VA.polarity === 'reversed') va = scale(va, -1);
       if (state.pt.VC.polarity === 'reversed') vc = scale(vc, -1);
 
-      // GE 469 open-delta input convention:
-      // VA input is expected to be Vab.
-      // VC input is expected to be Vcb, therefore relay Vbc = -VC.
+      // GE 469 open-delta: VA = Vab input, VC = Vcb input → Vbc = -VC
       const vab = va;
       const vbc = scale(vc, -1);
       const vca = scale(add(vab, vbc), -1);
 
-      // Reconstruct phase-to-neutral quantities with zero-sequence removed.
-      // These are the voltages paired with IA, IB and IC for complex power.
+      // Reconstruct phase-to-neutral for complex power (zero-seq removed)
       const van = scale(add(scale(vab, 2), vbc), 1 / 3);
       const vbn = scale(add(scale(vab, -1), vbc), 1 / 3);
       const vcn = scale(add(scale(vab, -1), scale(vbc, -2)), 1 / 3);
 
       return {
         inputs: { A: va, B: complex(0, 0), C: vc },
-        line: { AB: vab, BC: vbc, CA: vca },
-        phase: { A: van, B: vbn, C: vcn }
+        line:   { AB: vab, BC: vbc, CA: vca },
+        phase:  { A: van, B: vbn, C: vcn }
       };
     }
 
-    function complexPower(voltages, currents) {
-      return phases.reduce(
-        (total, phase) => add(total, multiply(voltages[phase], conjugate(currents[phase]))),
-        complex(0, 0)
-      );
+    function complexPower(V, I) {
+      return phases.reduce((s, p) => add(s, multiply(V[p], conjugate(I[p]))), complex(0, 0));
     }
 
     function calculate() {
-      const sourceV = systemVoltages();
-      const sourceI = trueCurrents();
-      const relayV = relayVoltages();
-      const relayI = relayCurrents();
-
-      const trueS = complexPower(sourceV, sourceI);
-      const relayS = complexPower(relayV.phase, relayI);
-      const relayApparent = magnitude(relayS);
-
-      return {
-        sourceV,
-        sourceI,
-        relayV,
-        relayI,
-        trueS,
-        relayS,
-        relayPf: relayApparent > 1e-9 ? relayS.re / relayApparent : 0
-      };
+      const srcV  = systemVoltages();
+      const srcI  = trueCurrents();
+      const relV  = relayVoltages();
+      const relI  = relayCurrents();
+      const trueS = complexPower(srcV, srcI);
+      const relS  = complexPower(relV.phase, relI);
+      const relApp = magnitude(relS);
+      return { srcV, srcI, relayV: relV, relayI: relI, trueS, relayS: relS,
+               relayPf: relApp > 1e-9 ? relS.re / relApp : 0 };
     }
 
-    function lagAngle(value, reference) {
-      return normalize(angle(reference) - angle(value));
-    }
+    const lagAngle = (v, ref) => normalize(angle(ref) - angle(v));
 
-    function updateMetrics(result) {
-      const trueApparent = magnitude(result.trueS);
-      const truePf = trueApparent > 1e-9 ? result.trueS.re / trueApparent : 0;
-
-      $('truePf').textContent = truePf.toFixed(3);
-      $('truePfSub').textContent =
-        `${state.reactive} · ${state.flow === 'load' ? 'load' : 'export'}`;
-
-      $('relayPf').textContent = result.relayPf.toFixed(3);
+    function updateMetrics(r) {
+      const tApp = magnitude(r.trueS);
+      const tPf  = tApp > 1e-9 ? r.trueS.re / tApp : 0;
+      $('truePf').textContent    = tPf.toFixed(3);
+      $('truePfSub').textContent = `${state.reactive} · ${state.flow === 'load' ? 'load' : 'export'}`;
+      $('relayPf').textContent   = r.relayPf.toFixed(3);
       $('relayPfSub').textContent =
-        result.relayS.re < -1e-6 ? 'reverse kW' :
-        result.relayS.re > 1e-6 ? 'forward kW' : 'near zero kW';
-
-      $('powerP').textContent = result.relayS.re.toFixed(3);
-      $('powerQ').textContent = result.relayS.im.toFixed(3);
+        r.relayS.re < -1e-6 ? 'reverse kW' :
+        r.relayS.re >  1e-6 ? 'forward kW' : 'near zero kW';
+      $('powerP').textContent = r.relayS.re.toFixed(3);
+      $('powerQ').textContent = r.relayS.im.toFixed(3);
     }
 
-    function enforceCtPermutation(changedChannel, newSource) {
-      const oldSource = state.ct[changedChannel].source;
-      const conflictingChannel = phases.find(
-        channel => channel !== changedChannel && state.ct[channel].source === newSource
-      );
-
-      state.ct[changedChannel].source = newSource;
-
-      if (conflictingChannel) {
-        state.ct[conflictingChannel].source = oldSource;
-      }
+    function enforceCtPermutation(ch, newSrc) {
+      const old = state.ct[ch].source;
+      const conflict = phases.find(p => p !== ch && state.ct[p].source === newSrc);
+      state.ct[ch].source = newSrc;
+      if (conflict) state.ct[conflict].source = old;
     }
 
     function syncControls() {
       const active = state.activeControl;
-      const ptActive = active === 'PT';
+      const sysActive = active === 'PT';
 
-      $('ctPanel').hidden = ptActive;
-      $('ptPanel').hidden = !ptActive;
+      $('phasePanel').hidden  = sysActive;
+      $('systemPanel').hidden = !sysActive;
 
-      phases.forEach(phase => {
-        $('open' + phase).setAttribute('aria-pressed', String(active === phase));
-      });
-      $('openPT').setAttribute('aria-pressed', String(ptActive));
+      phases.forEach(p => $('open' + p).setAttribute('aria-pressed', String(active === p)));
+      $('openPT').setAttribute('aria-pressed', String(sysActive));
 
-      if (!ptActive) {
-        const settings = state.ct[active];
+      if (!sysActive) {
+        const ct    = state.ct[active];
+        const hasPt = active === 'A' || active === 'C';
+        const ptKey = active === 'A' ? 'VA' : 'VC';
 
-        $('controlTitle').textContent = `Relay I${active} current input`;
+        $('ptSubsection').hidden = !hasPt;
+        $('ptNoInput').hidden    = hasPt;
+
+        if (hasPt) {
+          const pt = state.pt[ptKey];
+          $('ptSubLabel').textContent = `Voltage — V${active} input`;
+          $('ptPair').value     = pt.pair;
+          $('ptPolarity').value = pt.polarity;
+        }
+
+        $('controlTitle').textContent = `Phase ${active}`;
+        $('controlTitle').style.color = phaseColor(active);
+
+        const ptDesc = hasPt
+          ? `V${active} = ${state.pt[ptKey].pair}${state.pt[ptKey].polarity === 'reversed' ? ' (rev)' : ''} · `
+          : '';
         $('controlStatus').textContent =
-          `I${active} receives system phase ${settings.source} · ` +
-          `${settings.polarity === 'reversed' ? 'reversed 180°' : 'normal polarity'}`;
+          ptDesc + `I${active} ← sys ${ct.source}` +
+          (ct.polarity === 'reversed' ? ' · CT reversed' : '');
 
-        $('ctSourceLabel').textContent = `I${active} source`;
-        $('ctSource').value = settings.source;
-        $('ctPolarity').value = settings.polarity;
-        $('ctTrim').value = settings.trim;
-        $('ctTrimOutput').textContent = `${settings.trim}°`;
-        $('ctMagnitude').value = settings.magnitude;
-        $('ctMagnitudeOutput').textContent = settings.magnitude.toFixed(2);
+        $('ctSubLabel').textContent      = `Current — I${active} input`;
+        $('ctSourceLabel').textContent   = `I${active} source`;
+        $('ctSource').value              = ct.source;
+        $('ctPolarity').value            = ct.polarity;
+        $('ctTrim').value                = ct.trim;
+        $('ctTrimOutput').textContent    = `${ct.trim}°`;
+        $('ctMagnitude').value           = ct.magnitude;
+        $('ctMagnitudeOutput').textContent = ct.magnitude.toFixed(2);
       } else {
-        $('controlTitle').textContent = 'GE 469 open-delta PT and system setup';
-        $('controlStatus').textContent = 'Expected relay inputs: VA = Vab and VC = Vcb';
-
-        $('phaseSequence').value = state.sequence;
-        $('powerFlow').value = state.flow;
-        $('loadPf').value = Number(state.pf).toFixed(2);
+        $('controlTitle').textContent = 'System setup';
+        $('controlTitle').style.color = '';
+        $('controlStatus').textContent = 'Phase sequence · power flow · true PF';
+        $('phaseSequence').value    = state.sequence;
+        $('powerFlow').value        = state.flow;
+        $('loadPf').value           = Number(state.pf).toFixed(2);
         $('reactiveDirection').value = state.reactive;
-        $('ptVaPair').value = state.pt.VA.pair;
-        $('ptVaPolarity').value = state.pt.VA.polarity;
-        $('ptVcPair').value = state.pt.VC.pair;
-        $('ptVcPolarity').value = state.pt.VC.polarity;
       }
     }
 
     function wiringDifferences() {
-      const differences = [];
-
-      if (state.pt.VA.pair !== 'AB') {
-        differences.push(`VA PT primary is ${state.pt.VA.pair[0]}→${state.pt.VA.pair[1]} instead of A→B`);
-      }
-      if (state.pt.VA.polarity === 'reversed') {
-        differences.push('VA PT secondary is reversed');
-      }
-      if (state.pt.VC.pair !== 'CB') {
-        differences.push(`VC PT primary is ${state.pt.VC.pair[0]}→${state.pt.VC.pair[1]} instead of C→B`);
-      }
-      if (state.pt.VC.polarity === 'reversed') {
-        differences.push('VC PT secondary is reversed');
-      }
-
-      phases.forEach(channel => {
-        if (state.ct[channel].source !== channel) {
-          differences.push(`I${channel} receives system phase ${state.ct[channel].source}`);
-        }
-        if (state.ct[channel].polarity === 'reversed') {
-          differences.push(`I${channel} CT is reversed 180°`);
-        }
-        if (state.ct[channel].trim !== 0) {
-          differences.push(`I${channel} has ${state.ct[channel].trim}° extra shift`);
-        }
+      const diff = [];
+      if (state.pt.VA.pair !== 'AB')
+        diff.push(`VA PT primary is ${state.pt.VA.pair[0]}→${state.pt.VA.pair[1]} instead of A→B`);
+      if (state.pt.VA.polarity === 'reversed') diff.push('VA PT secondary is reversed');
+      if (state.pt.VC.pair !== 'CB')
+        diff.push(`VC PT primary is ${state.pt.VC.pair[0]}→${state.pt.VC.pair[1]} instead of C→B`);
+      if (state.pt.VC.polarity === 'reversed') diff.push('VC PT secondary is reversed');
+      phases.forEach(ch => {
+        if (state.ct[ch].source !== ch)
+          diff.push(`I${ch} receives system phase ${state.ct[ch].source}`);
+        if (state.ct[ch].polarity === 'reversed') diff.push(`I${ch} CT is reversed 180°`);
+        if (state.ct[ch].trim !== 0) diff.push(`I${ch} has ${state.ct[ch].trim}° extra shift`);
       });
-
-      return differences;
+      return diff;
     }
 
-    function updateDiagnosis(result) {
-      const differences = wiringDifferences();
-      const apparent = magnitude(result.relayS);
-
-      if (differences.length === 0) {
+    function updateDiagnosis(r) {
+      const diff = wiringDifferences();
+      if (diff.length === 0) {
         $('diagnosis').textContent =
           'Wiring matches the normal GE 469 open-delta arrangement: VA = Vab, VC = Vcb, and all CT channels are correctly phased.';
         return;
       }
-
-      const pfText = apparent > 1e-9
-        ? `469 PF = ${result.relayPf.toFixed(3)}`
+      const pfText = magnitude(r.relayS) > 1e-9
+        ? `469 PF = ${r.relayPf.toFixed(3)}`
         : 'calculated apparent power is near zero';
-
-      $('diagnosis').textContent = `${differences.join('; ')}. ${pfText}.`;
+      $('diagnosis').textContent = `${diff.join('; ')}. ${pfText}.`;
     }
 
-    function referenceAngle(result) {
-      return angle(result.relayV.inputs.A);
-    }
+    /* ── SVG helpers ─────────────────────────────────────── */
 
-    function phasorPoint(relativeAngle, length) {
+    const cx = 450, cy = 355;
+
+    function phasorPoint(relAngle, length) {
       return {
-        x: 450 + length * Math.cos(rad(relativeAngle)),
-        y: 355 - length * Math.sin(rad(relativeAngle))
+        x: cx + length * Math.cos(rad(relAngle)),
+        y: cy - length * Math.sin(rad(relAngle))
       };
     }
 
-    function drawPhasor(result) {
-      const reference = result.relayV.inputs.A;
-      const referenceDegrees = referenceAngle(result);
-      const cx = 450;
-      const cy = 355;
+    // Quadrant-aware label placement: keeps text away from origin and SVG edges.
+    function labelPos(pt, isBelow) {
+      const leftHalf = pt.x < cx;
+      const lowerHalf = pt.y > cy;
+      return {
+        x:      leftHalf ? pt.x - 9  : pt.x + 9,
+        y:      lowerHalf ? pt.y + (isBelow ? 22 : 6) : pt.y + (isBelow ? -5 : -12),
+        anchor: leftHalf ? 'end' : 'start'
+      };
+    }
 
-      $('definitions').innerHTML = phases.map(phase => `
-        <marker id="arrow${phase}" markerWidth="10" markerHeight="10"
+    // Color legend drawn at the bottom of every SVG view.
+    function legendMarkup() {
+      const pc = phaseColor;
+      return `
+        <line x1="246" y1="638" x2="262" y2="638" stroke="${pc('A')}" stroke-width="3.5"></line>
+        <text x="266" y="642" fill="${pc('A')}" font-size="12">Phase A</text>
+        <line x1="336" y1="638" x2="352" y2="638" stroke="${pc('B')}" stroke-width="3.5"></line>
+        <text x="356" y="642" fill="${pc('B')}" font-size="12">Phase B</text>
+        <line x1="426" y1="638" x2="442" y2="638" stroke="${pc('C')}" stroke-width="3.5"></line>
+        <text x="446" y="642" fill="${pc('C')}" font-size="12">Phase C</text>
+        <line x1="526" y1="630" x2="526" y2="646" stroke="var(--border)" stroke-width="1"></line>
+        <line x1="534" y1="638" x2="552" y2="638" stroke="var(--muted)" stroke-width="3.5"></line>
+        <text x="556" y="642" fill="var(--muted)" font-size="12">Voltage</text>
+        <line x1="613" y1="638" x2="631" y2="638" stroke="var(--muted)" stroke-width="2.5"
+              stroke-dasharray="7 4"></line>
+        <text x="635" y="642" fill="var(--muted)" font-size="12">Current</text>
+      `;
+    }
+
+    /* ── Phasor view ─────────────────────────────────────── */
+
+    function drawPhasor(r) {
+      const refV   = r.relayV.inputs.A;
+      const refDeg = angle(refV);
+
+      $('definitions').innerHTML = phases.map(p => `
+        <marker id="arrow${p}" markerWidth="10" markerHeight="10"
                 refX="9" refY="5" orient="auto">
-          <path d="M0,0 L10,5 L0,10z" fill="${phaseColor(phase)}"></path>
+          <path d="M0,0 L10,5 L0,10z" fill="${phaseColor(p)}"></path>
         </marker>
       `).join('');
 
-      let markup = `
+      let m = `
         <circle cx="${cx}" cy="${cy}" r="245" fill="none" stroke="var(--border)"></circle>
         <circle cx="${cx}" cy="${cy}" r="162" fill="none" stroke="var(--border)"
                 stroke-dasharray="5 7"></circle>
         <line x1="165" y1="${cy}" x2="735" y2="${cy}" stroke="var(--border)"></line>
-        <line x1="${cx}" y1="70" x2="${cx}" y2="625" stroke="var(--border)"></line>
+        <line x1="${cx}" y1="70"  x2="${cx}" y2="625" stroke="var(--border)"></line>
         <circle cx="${cx}" cy="${cy}" r="5" fill="var(--text)"></circle>
-        <text x="450" y="92" text-anchor="middle" fill="var(--muted)" font-size="13">
+        <text x="${cx}" y="88" text-anchor="middle" fill="var(--muted)" font-size="12">
           GE 469 lag-angle convention · Vab reference
         </text>
       `;
 
-      const voltageInputs = [
-        { phase: 'A', value: result.relayV.inputs.A, label: `VA (${state.pt.VA.pair})` },
-        { phase: 'C', value: result.relayV.inputs.C, label: `VC (${state.pt.VC.pair})` }
+      // Three line-voltage phasors: VA (relay input A), VBC (derived = −VC), VC (relay input C).
+      // VBC = Vbc = −VC completes the open-delta triangle and was the missing green phasor.
+      const voltItems = [
+        { phase: 'A', value: r.relayV.inputs.A,  label: `VA (${state.pt.VA.pair})` },
+        { phase: 'B', value: r.relayV.line.BC,   label: 'VBC' },
+        { phase: 'C', value: r.relayV.inputs.C,  label: `VC (${state.pt.VC.pair})` }
       ];
 
-      voltageInputs.forEach(item => {
-        const relative = signed(angle(item.value) - referenceDegrees);
-        const point = phasorPoint(relative, 220);
-        const lag = lagAngle(item.value, reference);
+      voltItems.forEach(item => {
+        if (magnitude(item.value) < 1e-10) return;
+        const rel  = signed(angle(item.value) - refDeg);
+        const pt   = phasorPoint(rel, 220);
+        const lag  = lagAngle(item.value, refV);
+        const lp   = labelPos(pt, false);
 
-        markup += `
-          <line x1="${cx}" y1="${cy}" x2="${point.x}" y2="${point.y}"
+        m += `
+          <line x1="${cx}" y1="${cy}" x2="${pt.x}" y2="${pt.y}"
                 stroke="${phaseColor(item.phase)}" stroke-width="5"
                 marker-end="url(#arrow${item.phase})"></line>
-          <circle cx="${point.x}" cy="${point.y}" r="6" fill="${phaseColor(item.phase)}"></circle>
-          <text x="${point.x + 9}" y="${point.y - 9}" fill="${phaseColor(item.phase)}"
-                font-size="15" font-weight="600">${item.label}</text>
-          <text x="${point.x + 9}" y="${point.y + 9}" fill="${phaseColor(item.phase)}"
-                font-size="12">${Math.round(lag)}° lag</text>
+          <circle cx="${pt.x}" cy="${pt.y}" r="6" fill="${phaseColor(item.phase)}"></circle>
+          <text x="${lp.x}" y="${lp.y}" fill="${phaseColor(item.phase)}"
+                font-size="14" font-weight="600"
+                text-anchor="${lp.anchor}">${item.label}</text>
+          <text x="${lp.x}" y="${lp.y + 15}" fill="${phaseColor(item.phase)}"
+                font-size="11" text-anchor="${lp.anchor}">${Math.round(lag)}° lag</text>
         `;
       });
 
-      markup += `
+      // VB relay input = 0 (open-delta reference)
+      m += `
         <circle cx="${cx}" cy="${cy}" r="9" fill="none" stroke="var(--muted)"></circle>
         <text x="${cx + 14}" y="${cy + 5}" fill="var(--muted)" font-size="12">VB = 0</text>
       `;
 
-      phases.forEach(channel => {
-        const value = result.relayI[channel];
-        const relative = signed(angle(value) - referenceDegrees);
-        const length = 135 + 45 * Math.min(1.5, magnitude(value));
-        const point = phasorPoint(relative, length);
-        const lag = lagAngle(value, reference);
+      // Three current phasors (dashed)
+      phases.forEach(ch => {
+        const v   = r.relayI[ch];
+        if (magnitude(v) < 1e-10) return;
+        const rel = signed(angle(v) - refDeg);
+        const len = 135 + 45 * Math.min(1.5, magnitude(v));
+        const pt  = phasorPoint(rel, len);
+        const lag = lagAngle(v, refV);
+        const lp  = labelPos(pt, true);
 
-        markup += `
-          <line x1="${cx}" y1="${cy}" x2="${point.x}" y2="${point.y}"
-                stroke="${phaseColor(channel)}" stroke-width="4"
-                stroke-dasharray="11 7" marker-end="url(#arrow${channel})"></line>
-          <circle cx="${point.x}" cy="${point.y}" r="6" fill="${phaseColor(channel)}"></circle>
-          <text x="${point.x + 9}" y="${point.y + 20}" fill="${phaseColor(channel)}"
-                font-size="14" font-weight="600">I${channel} ${Math.round(lag)}° lag</text>
+        m += `
+          <line x1="${cx}" y1="${cy}" x2="${pt.x}" y2="${pt.y}"
+                stroke="${phaseColor(ch)}" stroke-width="4"
+                stroke-dasharray="11 7" marker-end="url(#arrow${ch})"></line>
+          <circle cx="${pt.x}" cy="${pt.y}" r="5" fill="${phaseColor(ch)}"></circle>
+          <text x="${lp.x}" y="${lp.y}" fill="${phaseColor(ch)}"
+                font-size="13" font-weight="600"
+                text-anchor="${lp.anchor}">I${ch} ${Math.round(lag)}° lag</text>
         `;
       });
 
-      $('visualContent').innerHTML = markup;
+      m += legendMarkup();
+      $('visualContent').innerHTML = m;
     }
+
+    /* ── Sine view ───────────────────────────────────────── */
 
     function wavePath(value, amplitude, centerY, startX, width) {
-      const startingAngle = angle(value);
-      let path = '';
-
+      const a0 = angle(value);
+      let p = '';
       for (let x = 0; x <= width; x += 4) {
-        const y = centerY - Math.sin(
-          rad(360 * x / width + startingAngle + state.rotation)
-        ) * amplitude;
-
-        path += `${x === 0 ? 'M' : 'L'} ${startX + x} ${y} `;
+        const y = centerY - Math.sin(rad(360 * x / width + a0 + state.rotation)) * amplitude;
+        p += `${x === 0 ? 'M' : 'L'} ${startX + x} ${y} `;
       }
-
-      return path;
+      return p;
     }
 
-    function drawSine(result) {
+    function drawSine(r) {
       $('definitions').innerHTML = '';
 
-      const left = 65;
-      const width = 790;
-      const centerY = 340;
-      const voltageMax = Math.max(
-        ...phases.map(phase => magnitude(result.relayV.phase[phase])),
-        1e-9
-      );
-      const currentMax = Math.max(
-        ...phases.map(phase => magnitude(result.relayI[phase])),
-        1e-9
-      );
+      const left = 65, width = 790, centerY = 330;
+      const vMax = Math.max(...phases.map(p => magnitude(r.relayV.phase[p])), 1e-9);
+      const iMax = Math.max(...phases.map(p => magnitude(r.relayI[p])), 1e-9);
 
-      let markup = `
-        <text x="450" y="92" text-anchor="middle" fill="var(--muted)" font-size="13">
-          Reconstructed phase-neutral voltages used for power · CT inputs dashed
-        </text>
-      `;
+      let m = '';
 
-      for (let angleMark = 0; angleMark <= 360; angleMark += 60) {
-        const x = left + width * angleMark / 360;
-        markup += `
-          <line x1="${x}" y1="105" x2="${x}" y2="590" stroke="var(--border)"></line>
-          <text x="${x}" y="615" text-anchor="middle" fill="var(--muted)"
-                font-size="13">${angleMark}°</text>
+      for (let a = 0; a <= 360; a += 60) {
+        const x = left + width * a / 360;
+        m += `
+          <line x1="${x}" y1="105" x2="${x}" y2="575" stroke="var(--border)"></line>
+          <text x="${x}" y="597" text-anchor="middle" fill="var(--muted)" font-size="12">${a}°</text>
         `;
       }
 
-      [170, 340, 510].forEach(y => {
-        markup += `<line x1="${left}" y1="${y}" x2="${left + width}" y2="${y}"
-                         stroke="var(--border)"></line>`;
+      [165, 330, 495].forEach(y => {
+        m += `<line x1="${left}" y1="${y}" x2="${left + width}" y2="${y}"
+                    stroke="var(--border)"></line>`;
       });
 
-      phases.forEach(phase => {
-        const voltageAmplitude = 165 * magnitude(result.relayV.phase[phase]) / voltageMax;
-        markup += `
-          <path d="${wavePath(result.relayV.phase[phase], voltageAmplitude, centerY, left, width)}"
-                fill="none" stroke="${phaseColor(phase)}" stroke-width="4"></path>
-        `;
+      phases.forEach(p => {
+        const amp = 155 * magnitude(r.relayV.phase[p]) / vMax;
+        m += `<path d="${wavePath(r.relayV.phase[p], amp, centerY, left, width)}"
+                    fill="none" stroke="${phaseColor(p)}" stroke-width="4"></path>`;
       });
 
-      phases.forEach(channel => {
-        const currentAmplitude = 105 * magnitude(result.relayI[channel]) / currentMax;
-        markup += `
-          <path d="${wavePath(result.relayI[channel], currentAmplitude, centerY, left, width)}"
-                fill="none" stroke="${phaseColor(channel)}" stroke-width="3"
-                stroke-dasharray="12 8"></path>
-        `;
+      phases.forEach(ch => {
+        const amp = 100 * magnitude(r.relayI[ch]) / iMax;
+        m += `<path d="${wavePath(r.relayI[ch], amp, centerY, left, width)}"
+                    fill="none" stroke="${phaseColor(ch)}" stroke-width="3"
+                    stroke-dasharray="12 8"></path>`;
       });
 
-      $('visualContent').innerHTML = markup;
+      m += legendMarkup();
+      $('visualContent').innerHTML = m;
     }
 
-    function projectedPoint(z, y, lane) {
-      const perspective = rad(30);
-      const originX = 100;
-      const originY = 455;
+    /* ── 3-D view ────────────────────────────────────────── */
 
+    function projectedPoint(z, y, lane) {
+      const persp = rad(30);
       return {
-        x: originX + z * Math.cos(perspective),
-        y: originY - lane - y - z * Math.sin(perspective) * 0.38
+        x: 100 + z * Math.cos(persp),
+        y: 455 - lane - y - z * Math.sin(persp) * 0.38
       };
     }
 
     function threeDPath(value, amplitude, lane) {
-      const startingAngle = angle(value);
-      let path = '';
-
+      const a0 = angle(value);
+      let p = '';
       for (let step = 0; step <= 180; step++) {
-        const fraction = step / 180;
-        const z = 760 * fraction;
-        const y = Math.sin(
-          rad(360 * fraction + startingAngle + state.rotation)
-        ) * amplitude;
-        const point = projectedPoint(z, y, lane);
-
-        path += `${step === 0 ? 'M' : 'L'} ${point.x} ${point.y} `;
+        const frac = step / 180;
+        const z = 760 * frac;
+        const y = Math.sin(rad(360 * frac + a0 + state.rotation)) * amplitude;
+        const pt = projectedPoint(z, y, lane);
+        p += `${step === 0 ? 'M' : 'L'} ${pt.x} ${pt.y} `;
       }
-
-      return path;
+      return p;
     }
 
-    function drawThreeD(result) {
+    function drawThreeD(r) {
       $('definitions').innerHTML = '';
 
       const lanes = { A: 165, B: 0, C: -165 };
-      const voltageMax = Math.max(
-        ...phases.map(phase => magnitude(result.relayV.phase[phase])),
-        1e-9
-      );
-      const currentMax = Math.max(
-        ...phases.map(phase => magnitude(result.relayI[phase])),
-        1e-9
-      );
+      const vMax = Math.max(...phases.map(p => magnitude(r.relayV.phase[p])), 1e-9);
+      const iMax = Math.max(...phases.map(p => magnitude(r.relayI[p])), 1e-9);
 
-      let markup = `
-        <text x="450" y="92" text-anchor="middle" fill="var(--muted)" font-size="13">
-          Reconstructed relay voltages and measured CT currents through one cycle
-        </text>
-      `;
+      let m = '';
 
-      for (let index = 0; index <= 6; index++) {
-        const z = 760 * index / 6;
+      for (let i = 0; i <= 6; i++) {
+        const z = 760 * i / 6;
         const top = projectedPoint(z, 0, 220);
-        const bottom = projectedPoint(z, 0, -220);
-
-        markup += `
-          <line x1="${top.x}" y1="${top.y}" x2="${bottom.x}" y2="${bottom.y}"
-                stroke="var(--border)"></line>
-        `;
+        const bot = projectedPoint(z, 0, -220);
+        m += `<line x1="${top.x}" y1="${top.y}" x2="${bot.x}" y2="${bot.y}"
+                    stroke="var(--border)"></line>`;
       }
 
-      phases.forEach(phase => {
-        const lane = lanes[phase];
+      phases.forEach(p => {
+        const lane  = lanes[p];
         const start = projectedPoint(0, 0, lane);
-        const end = projectedPoint(760, 0, lane);
-        const voltageAmplitude = 70 * magnitude(result.relayV.phase[phase]) / voltageMax;
-        const currentAmplitude = 48 * magnitude(result.relayI[phase]) / currentMax;
+        const end   = projectedPoint(760, 0, lane);
+        const vAmp  = 70 * magnitude(r.relayV.phase[p]) / vMax;
+        const iAmp  = 48 * magnitude(r.relayI[p]) / iMax;
 
-        markup += `
+        m += `
           <line x1="${start.x}" y1="${start.y}" x2="${end.x}" y2="${end.y}"
                 stroke="var(--border)"></line>
-          <path d="${threeDPath(result.relayV.phase[phase], voltageAmplitude, lane)}"
-                fill="none" stroke="${phaseColor(phase)}" stroke-width="4"></path>
-          <path d="${threeDPath(result.relayI[phase], currentAmplitude, lane)}"
-                fill="none" stroke="${phaseColor(phase)}" stroke-width="3"
+          <path d="${threeDPath(r.relayV.phase[p], vAmp, lane)}"
+                fill="none" stroke="${phaseColor(p)}" stroke-width="4"></path>
+          <path d="${threeDPath(r.relayI[p], iAmp, lane)}"
+                fill="none" stroke="${phaseColor(p)}" stroke-width="3"
                 stroke-dasharray="12 8"></path>
-          <text x="${start.x + 8}" y="${start.y - 82}" fill="${phaseColor(phase)}"
-                font-size="15" font-weight="600">V${phase} / I${phase}</text>
+          <text x="${start.x + 8}" y="${start.y - 72}" fill="${phaseColor(p)}"
+                font-size="15" font-weight="600">V${p} / I${p}</text>
         `;
       });
 
-      $('visualContent').innerHTML = markup;
+      m += legendMarkup();
+      $('visualContent').innerHTML = m;
     }
 
-    function drawVisualization(result) {
-      if (state.activeView === 'phasor') drawPhasor(result);
-      else if (state.activeView === 'sine') drawSine(result);
-      else drawThreeD(result);
+    /* ── Render ──────────────────────────────────────────── */
+
+    function drawVisualization(r) {
+      if (state.activeView === 'phasor') drawPhasor(r);
+      else if (state.activeView === 'sine') drawSine(r);
+      else drawThreeD(r);
     }
 
     function render() {
-      const result = calculate();
+      const r = calculate();
       syncControls();
-      updateMetrics(result);
-      updateDiagnosis(result);
-      drawVisualization(result);
+      updateMetrics(r);
+      updateDiagnosis(r);
+      drawVisualization(r);
     }
 
     function setView(view) {
       state.activeView = view;
       $('tabPhasor').setAttribute('aria-selected', String(view === 'phasor'));
-      $('tabSine').setAttribute('aria-selected', String(view === 'sine'));
-      $('tab3d').setAttribute('aria-selected', String(view === '3d'));
+      $('tabSine').setAttribute('aria-selected',   String(view === 'sine'));
+      $('tab3d').setAttribute('aria-selected',     String(view === '3d'));
       render();
     }
 
-    function setControl(control) {
-      state.activeControl = control;
+    function setControl(ctrl) {
+      state.activeControl = ctrl;
       syncControls();
     }
 
-    phases.forEach(phase => {
-      $('open' + phase).addEventListener('click', () => setControl(phase));
+    /* ── Event listeners ─────────────────────────────────── */
+
+    phases.forEach(p => $('open' + p).addEventListener('click', () => setControl(p)));
+    $('openPT').addEventListener('click', () => setControl('PT'));
+
+    // Unified PT listeners — route to VA or VC based on active phase
+    $('ptPair').addEventListener('change', () => {
+      const key = state.activeControl === 'A' ? 'VA' : 'VC';
+      state.pt[key].pair = $('ptPair').value;
+      render();
     });
 
-    $('openPT').addEventListener('click', () => setControl('PT'));
+    $('ptPolarity').addEventListener('change', () => {
+      const key = state.activeControl === 'A' ? 'VA' : 'VC';
+      state.pt[key].polarity = $('ptPolarity').value;
+      render();
+    });
 
     $('ctSource').addEventListener('change', () => {
       enforceCtPermutation(state.activeControl, $('ctSource').value);
@@ -1115,65 +983,24 @@
       render();
     });
 
-    $('phaseSequence').addEventListener('change', () => {
-      state.sequence = $('phaseSequence').value;
-      render();
-    });
-
-    $('powerFlow').addEventListener('change', () => {
-      state.flow = $('powerFlow').value;
-      render();
-    });
+    $('phaseSequence').addEventListener('change', () => { state.sequence = $('phaseSequence').value; render(); });
+    $('powerFlow').addEventListener('change',      () => { state.flow     = $('powerFlow').value;     render(); });
+    $('reactiveDirection').addEventListener('change', () => { state.reactive = $('reactiveDirection').value; render(); });
 
     $('loadPf').addEventListener('input', () => {
-      const value = Math.min(1, Math.max(0, Number($('loadPf').value) || 0));
-      state.pf = value;
-      render();
-    });
-
-    $('reactiveDirection').addEventListener('change', () => {
-      state.reactive = $('reactiveDirection').value;
-      render();
-    });
-
-    $('ptVaPair').addEventListener('change', () => {
-      state.pt.VA.pair = $('ptVaPair').value;
-      render();
-    });
-
-    $('ptVaPolarity').addEventListener('change', () => {
-      state.pt.VA.polarity = $('ptVaPolarity').value;
-      render();
-    });
-
-    $('ptVcPair').addEventListener('change', () => {
-      state.pt.VC.pair = $('ptVcPair').value;
-      render();
-    });
-
-    $('ptVcPolarity').addEventListener('change', () => {
-      state.pt.VC.polarity = $('ptVcPolarity').value;
+      state.pf = Math.min(1, Math.max(0, Number($('loadPf').value) || 0));
       render();
     });
 
     function correctWiring() {
       state.pt.VA = { pair: 'AB', polarity: 'normal' };
       state.pt.VC = { pair: 'CB', polarity: 'normal' };
-      state.ct.A.source = 'A';
-      state.ct.B.source = 'B';
-      state.ct.C.source = 'C';
-
-      phases.forEach(phase => {
-        state.ct[phase].polarity = 'normal';
-        state.ct[phase].trim = 0;
-        state.ct[phase].magnitude = 1;
+      phases.forEach(p => {
+        state.ct[p] = { source: p, polarity: 'normal', trim: 0, magnitude: 1 };
       });
     }
 
-    $('presetCorrect').addEventListener('click', () => {
-      correctWiring();
-      render();
-    });
+    $('presetCorrect').addEventListener('click', () => { correctWiring(); render(); });
 
     $('presetBcSwap').addEventListener('click', () => {
       correctWiring();
@@ -1184,10 +1011,10 @@
 
     $('presetObserved').addEventListener('click', () => {
       correctWiring();
-      state.sequence = 'ABC';
-      state.flow = 'load';
-      state.pf = 0.04;
-      state.reactive = 'lag';
+      state.sequence  = 'ABC';
+      state.flow      = 'load';
+      state.pf        = 0.04;
+      state.reactive  = 'lag';
       state.pt.VA.pair = 'AC';
       state.pt.VC.pair = 'BC';
       state.ct.B.polarity = 'reversed';
@@ -1195,35 +1022,29 @@
     });
 
     $('reset').addEventListener('click', () => {
-      state.sequence = 'ABC';
-      state.flow = 'load';
-      state.pf = 0.04;
-      state.reactive = 'lag';
-      state.rotation = 0;
+      state.sequence     = 'ABC';
+      state.flow         = 'load';
+      state.pf           = 0.04;
+      state.reactive     = 'lag';
+      state.rotation     = 0;
       state.activeControl = 'A';
       correctWiring();
       render();
     });
 
     $('tabPhasor').addEventListener('click', () => setView('phasor'));
-    $('tabSine').addEventListener('click', () => setView('sine'));
-    $('tab3d').addEventListener('click', () => setView('3d'));
+    $('tabSine').addEventListener('click',   () => setView('sine'));
+    $('tab3d').addEventListener('click',     () => setView('3d'));
 
     function animateFrame() {
-      if (!$('animate').checked) {
-        state.frame = null;
-        return;
-      }
-
+      if (!$('animate').checked) { state.frame = null; return; }
       state.rotation = normalize(state.rotation + 1.5);
       drawVisualization(calculate());
       state.frame = requestAnimationFrame(animateFrame);
     }
 
     $('animate').addEventListener('change', () => {
-      if ($('animate').checked && !state.frame) {
-        animateFrame();
-      }
+      if ($('animate').checked && !state.frame) animateFrame();
     });
 
     render();
