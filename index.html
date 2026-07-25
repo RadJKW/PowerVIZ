@@ -1,0 +1,894 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Three-Phase PF Vector Analyzer</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --panel: #f7f8fa;
+      --card: #ffffff;
+      --text: #172033;
+      --muted: #687386;
+      --border: #cfd5df;
+      --accent: #3b6df2;
+      --accent-text: #ffffff;
+      --phase-a: #2878d0;
+      --phase-b: #159447;
+      --phase-c: #d57612;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --panel: #10141c;
+        --card: #181e28;
+        --text: #edf2fa;
+        --muted: #aab4c5;
+        --border: #3a4352;
+        --accent: #7298ff;
+        --accent-text: #0d1320;
+        --phase-a: #62a6ff;
+        --phase-b: #55d682;
+        --phase-c: #ffad4f;
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: var(--panel);
+      color: var(--text);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    button, select, input {
+      font: inherit;
+    }
+
+    button {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--card);
+      color: var(--text);
+      padding: 7px 11px;
+      cursor: pointer;
+    }
+
+    button:focus-visible,
+    select:focus-visible,
+    input:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    .pf-tool {
+      display: grid;
+      grid-template-rows: auto minmax(0, 56fr) minmax(0, 44fr);
+      width: 100%;
+      height: 100dvh;
+      min-height: 600px;
+      overflow: hidden;
+      background: var(--panel);
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: max(8px, env(safe-area-inset-top)) 8px 8px;
+      border-bottom: 1px solid var(--border);
+      background: var(--panel);
+    }
+
+    .tabs {
+      display: flex;
+      gap: 5px;
+    }
+
+    .tab-button[aria-selected="true"],
+    .phase-button[aria-pressed="true"] {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: var(--accent-text);
+    }
+
+    .switch {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      white-space: nowrap;
+      font-size: 14px;
+    }
+
+    .switch input {
+      width: 18px;
+      height: 18px;
+    }
+
+    .visual-area {
+      position: relative;
+      min-height: 0;
+      overflow: hidden;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .visual-surface {
+      display: block;
+      width: 100%;
+      height: 100%;
+      touch-action: none;
+    }
+
+    .metric-bar {
+      position: absolute;
+      z-index: 5;
+      top: 6px;
+      left: 7px;
+      right: 7px;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 3px;
+      padding: 3px;
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      background: color-mix(in srgb, var(--card) 92%, transparent);
+      backdrop-filter: blur(7px);
+    }
+
+    .metric {
+      min-width: 0;
+      padding: 3px 1px;
+      text-align: center;
+    }
+
+    .metric-label {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .metric-value {
+      font-size: 16px;
+    }
+
+    .metric-value.strong {
+      font-weight: 650;
+    }
+
+    .controls-area {
+      min-height: 0;
+      overflow: hidden;
+      padding: 7px;
+      padding-bottom: max(7px, env(safe-area-inset-bottom));
+      background: var(--card);
+    }
+
+    .phase-tabs {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 5px;
+    }
+
+    .phase-button {
+      padding: 6px 8px;
+      font-size: 14px;
+    }
+
+    .control-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-top: 7px;
+    }
+
+    .control-title {
+      font-size: 14px;
+      font-weight: 650;
+    }
+
+    .control-status {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .reset-button {
+      padding: 5px 8px;
+      font-size: 12px;
+    }
+
+    .control-body {
+      display: grid;
+      gap: 7px;
+      margin-top: 7px;
+    }
+
+    .control-body[hidden],
+    .general-controls[hidden] {
+      display: none !important;
+    }
+
+    .slider-row {
+      display: grid;
+      grid-template-columns: 72px minmax(0, 1fr) 46px;
+      align-items: center;
+      gap: 6px;
+      font-size: 14px;
+    }
+
+    .slider-row input[type="range"] {
+      width: 100%;
+      min-width: 0;
+    }
+
+    .slider-output {
+      text-align: right;
+    }
+
+    .association-row {
+      display: grid;
+      grid-template-columns: 72px minmax(0, 1fr);
+      align-items: center;
+      gap: 6px;
+      font-size: 14px;
+    }
+
+    .association-select {
+      width: 100%;
+      min-width: 0;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 8px;
+      background: var(--panel);
+      color: var(--text);
+    }
+
+    .action-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+
+    .action-row button {
+      padding: 7px 8px;
+      font-size: 14px;
+    }
+
+    .general-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 9px;
+    }
+
+    .general-grid label {
+      font-size: 14px;
+    }
+
+    .general-grid input {
+      width: 100%;
+      margin-top: 4px;
+    }
+
+    .mapping-summary {
+      margin-top: 10px;
+      text-align: center;
+      font-size: 14px;
+    }
+
+    @media (max-width: 420px) {
+      .pf-tool {
+        grid-template-rows: auto minmax(0, 54fr) minmax(0, 46fr);
+      }
+
+      .topbar {
+        padding-left: 5px;
+        padding-right: 5px;
+      }
+
+      button {
+        padding-left: 9px;
+        padding-right: 9px;
+      }
+
+      .switch {
+        font-size: 13px;
+      }
+
+      .controls-area {
+        padding: 6px;
+      }
+
+      .slider-row {
+        grid-template-columns: 66px minmax(0, 1fr) 42px;
+      }
+
+      .association-row {
+        grid-template-columns: 66px minmax(0, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="pf-tool">
+    <header class="topbar">
+      <div class="tabs" role="tablist" aria-label="Visualization">
+        <button id="tabPhasor" type="button" class="tab-button" aria-selected="true">Phasor</button>
+        <button id="tabSine" type="button" class="tab-button" aria-selected="false">Sine</button>
+        <button id="tab3d" type="button" class="tab-button" aria-selected="false">3D</button>
+      </div>
+
+      <label class="switch">
+        <input id="animate" type="checkbox">
+        <span>Animate</span>
+      </label>
+    </header>
+
+    <main class="visual-area">
+      <div class="metric-bar" aria-live="polite">
+        <div class="metric">
+          <div class="metric-label">PF</div>
+          <div id="pf" class="metric-value strong">0.000</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">P</div>
+          <div id="p" class="metric-value">0.000</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Q</div>
+          <div id="q" class="metric-value">0.000</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">S</div>
+          <div id="s" class="metric-value">0.000</div>
+        </div>
+      </div>
+
+      <svg id="visual" class="visual-surface" viewBox="0 0 900 650"
+           role="img" aria-label="Three-phase electrical visualization">
+        <defs id="definitions"></defs>
+        <g id="visualContent"></g>
+      </svg>
+    </main>
+
+    <section class="controls-area">
+      <div class="phase-tabs" aria-label="Adjustment selection">
+        <button id="openA" type="button" class="phase-button" aria-pressed="true">IA</button>
+        <button id="openB" type="button" class="phase-button" aria-pressed="false">IB</button>
+        <button id="openC" type="button" class="phase-button" aria-pressed="false">IC</button>
+        <button id="openGeneral" type="button" class="phase-button" aria-pressed="false">Other</button>
+      </div>
+
+      <div class="control-head">
+        <div>
+          <div id="controlTitle" class="control-title">Adjust IA</div>
+          <div id="controlStatus" class="control-status">IA associated with VA</div>
+        </div>
+        <button id="reset" type="button" class="reset-button">Reset</button>
+      </div>
+
+      <div id="phaseControls" class="control-body">
+        <div class="slider-row">
+          <label id="voltageLabel" for="voltageAngle">VA angle</label>
+          <input id="voltageAngle" type="range" min="0" max="359" step="1">
+          <output id="voltageOutput" class="slider-output"></output>
+        </div>
+
+        <div class="slider-row">
+          <label id="currentLabel" for="currentAngle">IA angle</label>
+          <input id="currentAngle" type="range" min="0" max="359" step="1">
+          <output id="currentOutput" class="slider-output"></output>
+        </div>
+
+        <div class="association-row">
+          <label for="association">Associate</label>
+          <select id="association" class="association-select">
+            <option value="A">VA</option>
+            <option value="B">VB</option>
+            <option value="C">VC</option>
+          </select>
+        </div>
+
+        <div class="action-row">
+          <button id="flipCurrent" type="button">Flip 180°</button>
+          <button id="setBalanced" type="button">Balance angles</button>
+        </div>
+      </div>
+
+      <div id="generalControls" class="general-controls" hidden>
+        <div class="general-grid">
+          <label>
+            Current magnitude
+            <input id="currentMagnitude" type="range" min="0" max="1.5" step="0.05" value="1">
+          </label>
+          <label>
+            3D perspective
+            <input id="perspective" type="range" min="10" max="55" step="1" value="30">
+          </label>
+        </div>
+        <div id="mappingSummary" class="mapping-summary"></div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const $ = id => document.getElementById(id);
+    const phases = ['A', 'B', 'C'];
+    const colorIndex = { A: 1, B: 2, C: 3 };
+
+    const state = {
+      voltage: { A: 0, B: 240, C: 120 },
+      current: { A: 272, B: 152, C: 32 },
+      map: { A: 'A', B: 'B', C: 'C' },
+      currentMagnitude: 1,
+      perspective: 30,
+      activePhase: 'A',
+      activeView: 'phasor',
+      rotation: 0,
+      dragging: null,
+      frame: null
+    };
+
+    const rad = value => value * Math.PI / 180;
+    const deg = value => value * 180 / Math.PI;
+    const normalize = value => ((Number(value) % 360) + 360) % 360;
+
+    function signedAngle(value) {
+      const normalized = normalize(value);
+      return normalized > 180 ? normalized - 360 : normalized;
+    }
+
+    function colorVar(phase) {
+      return `var(--phase-${phase.toLowerCase()})`;
+    }
+
+    function calculate() {
+      let p = 0;
+      let q = 0;
+
+      phases.forEach(currentPhase => {
+        const voltagePhase = state.map[currentPhase];
+        const delta = signedAngle(
+          state.voltage[voltagePhase] - state.current[currentPhase]
+        );
+        p += state.currentMagnitude * Math.cos(rad(delta));
+        q += state.currentMagnitude * Math.sin(rad(delta));
+      });
+
+      const s = Math.hypot(p, q);
+      return { p, q, s, pf: s > 0.000001 ? p / s : 0 };
+    }
+
+    function enforcePermutation(changedCurrent, newVoltage) {
+      const oldVoltage = state.map[changedCurrent];
+      const conflict = phases.find(
+        phase => phase !== changedCurrent && state.map[phase] === newVoltage
+      );
+
+      state.map[changedCurrent] = newVoltage;
+      if (conflict) state.map[conflict] = oldVoltage;
+    }
+
+    function updateMetrics() {
+      const result = calculate();
+      $('pf').textContent = result.pf.toFixed(3);
+      $('p').textContent = result.p.toFixed(3);
+      $('q').textContent = result.q.toFixed(3);
+      $('s').textContent = result.s.toFixed(3);
+    }
+
+    function updateControls() {
+      const phase = state.activePhase;
+      const general = phase === 'general';
+
+      $('phaseControls').hidden = general;
+      $('generalControls').hidden = !general;
+
+      phases.forEach(item => {
+        $('open' + item).setAttribute('aria-pressed', String(item === phase));
+      });
+      $('openGeneral').setAttribute('aria-pressed', String(general));
+
+      if (general) {
+        $('controlTitle').textContent = 'Other controls';
+        $('controlStatus').textContent = 'Visualization and current magnitude';
+        $('controlStatus').style.color = '';
+        $('currentMagnitude').value = state.currentMagnitude;
+        $('perspective').value = state.perspective;
+        $('mappingSummary').innerHTML = phases.map(item => {
+          const mapped = state.map[item];
+          return `<span style="color:${colorVar(mapped)}">I${item}→V${mapped}</span>`;
+        }).join(' &nbsp; ');
+        return;
+      }
+
+      const associated = state.map[phase];
+      $('controlTitle').textContent = `Adjust I${phase}`;
+      $('controlStatus').textContent = `I${phase} associated with V${associated}`;
+      $('controlStatus').style.color = colorVar(associated);
+      $('voltageLabel').textContent = `V${associated} angle`;
+      $('currentLabel').textContent = `I${phase} angle`;
+      $('voltageAngle').value = state.voltage[associated];
+      $('currentAngle').value = state.current[phase];
+      $('voltageOutput').textContent = `${Math.round(state.voltage[associated])}°`;
+      $('currentOutput').textContent = `${Math.round(state.current[phase])}°`;
+      $('association').value = associated;
+      $('association').style.borderColor = colorVar(associated);
+    }
+
+    function phasorPoint(angle, length) {
+      return {
+        x: 450 + length * Math.cos(rad(angle)),
+        y: 355 - length * Math.sin(rad(angle))
+      };
+    }
+
+    function drawPhasor() {
+      const cx = 450;
+      const cy = 355;
+
+      $('definitions').innerHTML = phases.map(phase => `
+        <marker id="arrow${phase}" markerWidth="10" markerHeight="10"
+                refX="9" refY="5" orient="auto">
+          <path d="M0,0 L10,5 L0,10z" fill="${colorVar(phase)}"></path>
+        </marker>
+      `).join('');
+
+      let markup = `
+        <circle cx="${cx}" cy="${cy}" r="245" fill="none" stroke="var(--border)"></circle>
+        <circle cx="${cx}" cy="${cy}" r="162" fill="none" stroke="var(--border)"
+                stroke-dasharray="5 7"></circle>
+        <line x1="165" y1="${cy}" x2="735" y2="${cy}" stroke="var(--border)"></line>
+        <line x1="${cx}" y1="70" x2="${cx}" y2="625" stroke="var(--border)"></line>
+        <circle cx="${cx}" cy="${cy}" r="5" fill="var(--text)"></circle>
+      `;
+
+      phases.forEach(phase => {
+        const point = phasorPoint(state.voltage[phase], 220);
+        markup += `
+          <g data-kind="voltage" data-phase="${phase}" style="cursor:grab">
+            <line x1="${cx}" y1="${cy}" x2="${point.x}" y2="${point.y}"
+                  stroke="${colorVar(phase)}" stroke-width="5"
+                  marker-end="url(#arrow${phase})"></line>
+            <circle cx="${point.x}" cy="${point.y}" r="20" fill="transparent"></circle>
+            <circle cx="${point.x}" cy="${point.y}" r="6" fill="${colorVar(phase)}"></circle>
+            <text x="${point.x + 9}" y="${point.y - 9}" fill="${colorVar(phase)}"
+                  font-size="17" font-weight="600">V${phase}</text>
+          </g>
+        `;
+      });
+
+      phases.forEach(currentPhase => {
+        const associated = state.map[currentPhase];
+        const point = phasorPoint(
+          state.current[currentPhase],
+          125 + 45 * state.currentMagnitude
+        );
+        const color = colorVar(associated);
+
+        markup += `
+          <g data-kind="current" data-phase="${currentPhase}" style="cursor:grab">
+            <line x1="${cx}" y1="${cy}" x2="${point.x}" y2="${point.y}"
+                  stroke="${color}" stroke-width="4" stroke-dasharray="11 7"
+                  marker-end="url(#arrow${associated})"></line>
+            <circle cx="${point.x}" cy="${point.y}" r="20" fill="transparent"></circle>
+            <circle cx="${point.x}" cy="${point.y}" r="6" fill="${color}"></circle>
+            <text x="${point.x + 9}" y="${point.y + 20}" fill="${color}"
+                  font-size="15" font-weight="600">I${currentPhase}→V${associated}</text>
+          </g>
+        `;
+      });
+
+      $('visualContent').innerHTML = markup;
+    }
+
+    function wavePath(angle, amplitude, centerY, startX, width) {
+      let path = '';
+      for (let x = 0; x <= width; x += 4) {
+        const y = centerY - Math.sin(
+          rad(360 * x / width + angle + state.rotation)
+        ) * amplitude;
+        path += `${x === 0 ? 'M' : 'L'} ${startX + x} ${y} `;
+      }
+      return path;
+    }
+
+    function drawSine() {
+      $('definitions').innerHTML = '';
+
+      const left = 65;
+      const width = 790;
+      const centerY = 340;
+      const voltageAmplitude = 170;
+      const currentAmplitude = 110 * state.currentMagnitude;
+
+      let markup = '';
+
+      for (let angle = 0; angle <= 360; angle += 60) {
+        const x = left + width * angle / 360;
+        markup += `
+          <line x1="${x}" y1="105" x2="${x}" y2="590" stroke="var(--border)"></line>
+          <text x="${x}" y="615" text-anchor="middle" fill="var(--muted)"
+                font-size="13">${angle}°</text>
+        `;
+      }
+
+      [170, 340, 510].forEach(y => {
+        markup += `<line x1="${left}" y1="${y}" x2="${left + width}" y2="${y}"
+                         stroke="var(--border)"></line>`;
+      });
+
+      phases.forEach(phase => {
+        markup += `
+          <path d="${wavePath(state.voltage[phase], voltageAmplitude, centerY, left, width)}"
+                fill="none" stroke="${colorVar(phase)}" stroke-width="4"></path>
+        `;
+      });
+
+      phases.forEach(currentPhase => {
+        const associated = state.map[currentPhase];
+        markup += `
+          <path d="${wavePath(state.current[currentPhase], currentAmplitude, centerY, left, width)}"
+                fill="none" stroke="${colorVar(associated)}" stroke-width="3"
+                stroke-dasharray="12 8"></path>
+        `;
+      });
+
+      markup += `
+        <g transform="translate(75 125)">
+          <line x1="0" y1="0" x2="42" y2="0" stroke="var(--phase-a)"
+                stroke-width="4"></line>
+          <text x="50" y="5" fill="var(--text)" font-size="14">Voltage: solid</text>
+          <line x1="170" y1="0" x2="212" y2="0" stroke="var(--phase-a)"
+                stroke-width="3" stroke-dasharray="12 8"></line>
+          <text x="220" y="5" fill="var(--text)" font-size="14">Current: dashed</text>
+        </g>
+      `;
+
+      $('visualContent').innerHTML = markup;
+    }
+
+    function projectedPoint(z, y, lane) {
+      const angle = rad(state.perspective);
+      const originX = 100;
+      const originY = 455;
+
+      return {
+        x: originX + z * Math.cos(angle),
+        y: originY - lane - y - z * Math.sin(angle) * 0.38
+      };
+    }
+
+    function threeDPath(angle, amplitude, lane) {
+      let path = '';
+
+      for (let step = 0; step <= 180; step++) {
+        const fraction = step / 180;
+        const z = 760 * fraction;
+        const y = Math.sin(
+          rad(360 * fraction + angle + state.rotation)
+        ) * amplitude;
+        const point = projectedPoint(z, y, lane);
+        path += `${step === 0 ? 'M' : 'L'} ${point.x} ${point.y} `;
+      }
+
+      return path;
+    }
+
+    function drawThreeD() {
+      $('definitions').innerHTML = '';
+
+      const lanes = { A: 165, B: 0, C: -165 };
+      let markup = '';
+
+      for (let index = 0; index <= 6; index++) {
+        const z = 760 * index / 6;
+        const top = projectedPoint(z, 0, 220);
+        const bottom = projectedPoint(z, 0, -220);
+
+        markup += `
+          <line x1="${top.x}" y1="${top.y}" x2="${bottom.x}" y2="${bottom.y}"
+                stroke="var(--border)"></line>
+        `;
+      }
+
+      phases.forEach(phase => {
+        const lane = lanes[phase];
+        const start = projectedPoint(0, 0, lane);
+        const end = projectedPoint(760, 0, lane);
+
+        markup += `
+          <line x1="${start.x}" y1="${start.y}" x2="${end.x}" y2="${end.y}"
+                stroke="var(--border)"></line>
+          <path d="${threeDPath(state.voltage[phase], 70, lane)}"
+                fill="none" stroke="${colorVar(phase)}" stroke-width="4"></path>
+          <path d="${threeDPath(state.current[phase], 48 * state.currentMagnitude, lane)}"
+                fill="none" stroke="${colorVar(state.map[phase])}" stroke-width="3"
+                stroke-dasharray="12 8"></path>
+          <text x="${start.x + 8}" y="${start.y - 82}" fill="${colorVar(phase)}"
+                font-size="16" font-weight="600">V${phase}</text>
+          <text x="${start.x + 8}" y="${start.y - 62}"
+                fill="${colorVar(state.map[phase])}" font-size="14">
+            I${phase}→V${state.map[phase]}
+          </text>
+        `;
+      });
+
+      $('visualContent').innerHTML = markup;
+    }
+
+    function drawVisualization() {
+      if (state.activeView === 'phasor') drawPhasor();
+      else if (state.activeView === 'sine') drawSine();
+      else drawThreeD();
+    }
+
+    function render() {
+      updateMetrics();
+      updateControls();
+      drawVisualization();
+    }
+
+    function setView(view) {
+      state.activeView = view;
+      $('tabPhasor').setAttribute('aria-selected', String(view === 'phasor'));
+      $('tabSine').setAttribute('aria-selected', String(view === 'sine'));
+      $('tab3d').setAttribute('aria-selected', String(view === '3d'));
+      render();
+    }
+
+    function selectControl(phase) {
+      state.activePhase = phase;
+      updateControls();
+    }
+
+    function pointerAngle(event) {
+      const svg = $('visual');
+      const point = svg.createSVGPoint();
+      point.x = event.clientX;
+      point.y = event.clientY;
+
+      const matrix = svg.getScreenCTM();
+      if (!matrix) return 0;
+
+      const local = point.matrixTransform(matrix.inverse());
+      return normalize(deg(Math.atan2(355 - local.y, local.x - 450)));
+    }
+
+    $('visual').addEventListener('pointerdown', event => {
+      if (state.activeView !== 'phasor') return;
+
+      const group = event.target.closest('g[data-kind]');
+      if (!group) return;
+
+      event.preventDefault();
+      state.dragging = {
+        kind: group.dataset.kind,
+        phase: group.dataset.phase
+      };
+      $('visual').setPointerCapture(event.pointerId);
+    });
+
+    $('visual').addEventListener('pointermove', event => {
+      if (!state.dragging || state.activeView !== 'phasor') return;
+
+      const angle = pointerAngle(event);
+
+      if (state.dragging.kind === 'voltage') {
+        state.voltage[state.dragging.phase] = angle;
+      } else {
+        state.current[state.dragging.phase] = angle;
+      }
+
+      render();
+    });
+
+    function stopDrag(event) {
+      if (!state.dragging) return;
+      state.dragging = null;
+
+      try {
+        $('visual').releasePointerCapture(event.pointerId);
+      } catch (_) {}
+    }
+
+    $('visual').addEventListener('pointerup', stopDrag);
+    $('visual').addEventListener('pointercancel', stopDrag);
+
+    phases.forEach(phase => {
+      $('open' + phase).addEventListener('click', () => selectControl(phase));
+    });
+
+    $('openGeneral').addEventListener('click', () => selectControl('general'));
+
+    $('voltageAngle').addEventListener('input', () => {
+      const voltagePhase = state.map[state.activePhase];
+      state.voltage[voltagePhase] = normalize($('voltageAngle').value);
+      render();
+    });
+
+    $('currentAngle').addEventListener('input', () => {
+      state.current[state.activePhase] = normalize($('currentAngle').value);
+      render();
+    });
+
+    $('association').addEventListener('change', () => {
+      enforcePermutation(state.activePhase, $('association').value);
+      render();
+    });
+
+    $('flipCurrent').addEventListener('click', () => {
+      state.current[state.activePhase] = normalize(
+        state.current[state.activePhase] + 180
+      );
+      render();
+    });
+
+    $('setBalanced').addEventListener('click', () => {
+      state.voltage = { A: 0, B: 240, C: 120 };
+
+      const delta = signedAngle(
+        state.voltage[state.map[state.activePhase]] -
+        state.current[state.activePhase]
+      );
+
+      phases.forEach(phase => {
+        state.current[phase] = normalize(
+          state.voltage[state.map[phase]] - delta
+        );
+      });
+
+      render();
+    });
+
+    $('currentMagnitude').addEventListener('input', () => {
+      state.currentMagnitude = Number($('currentMagnitude').value);
+      render();
+    });
+
+    $('perspective').addEventListener('input', () => {
+      state.perspective = Number($('perspective').value);
+      render();
+    });
+
+    $('reset').addEventListener('click', () => {
+      state.voltage = { A: 0, B: 240, C: 120 };
+      state.current = { A: 272, B: 152, C: 32 };
+      state.map = { A: 'A', B: 'B', C: 'C' };
+      state.currentMagnitude = 1;
+      state.perspective = 30;
+      state.rotation = 0;
+      state.activePhase = 'A';
+      render();
+    });
+
+    $('tabPhasor').addEventListener('click', () => setView('phasor'));
+    $('tabSine').addEventListener('click', () => setView('sine'));
+    $('tab3d').addEventListener('click', () => setView('3d'));
+
+    function animateFrame() {
+      if (!$('animate').checked) {
+        state.frame = null;
+        return;
+      }
+
+      state.rotation = normalize(state.rotation + 1.5);
+      drawVisualization();
+      state.frame = requestAnimationFrame(animateFrame);
+    }
+
+    $('animate').addEventListener('change', () => {
+      if ($('animate').checked && !state.frame) animateFrame();
+    });
+
+    render();
+  </script>
+</body>
+</html>
