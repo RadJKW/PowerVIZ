@@ -1543,6 +1543,34 @@
     bindAngle('voltageAngle', 'voltageAngleNum', state.voltage);
     bindAngle('currentAngle', 'currentAngleNum', state.current);
 
+    /* Tapping a numeric field should replace its value, not drop the caret at
+       whatever position happened to be touched. Queried by type so any field
+       added later is covered too. */
+    document.querySelectorAll('input[type="number"]').forEach(field => {
+      let focusing = false;
+
+      field.addEventListener('focus', () => {
+        focusing = true;
+        // The caret is placed after the focus event, so select on the next frame.
+        // select() works on number inputs; setSelectionRange() throws on them.
+        requestAnimationFrame(() => {
+          try { field.select(); } catch (_) {}
+        });
+      });
+
+      // The pointer release that delivered focus would otherwise collapse the
+      // selection again. Only that one is suppressed, so clicking a second time
+      // still positions the caret for editing part of a value.
+      const keepSelection = event => {
+        if (!focusing) return;
+        focusing = false;
+        event.preventDefault();
+      };
+      field.addEventListener('pointerup', keepSelection);
+      field.addEventListener('mouseup', keepSelection);
+      field.addEventListener('blur', () => { focusing = false; });
+    });
+
     function bindMagnitude(inputId, store) {
       $(inputId).addEventListener('input', () => {
         const value = Number($(inputId).value);
