@@ -197,7 +197,9 @@
     }
 
     .metric-value {
+      overflow: hidden;
       font-size: 16px;
+      text-overflow: ellipsis;
       white-space: nowrap;
     }
 
@@ -343,6 +345,76 @@
       font-size: 13px;
     }
 
+    .head-actions {
+      display: flex;
+      flex: none;
+      gap: 6px;
+    }
+
+    .quick-dialog {
+      width: min(93vw, 380px);
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--card);
+      color: var(--text);
+    }
+
+    .quick-dialog::backdrop {
+      background: rgba(0, 0, 0, 0.5);
+    }
+
+    .quick-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .quick-hint {
+      color: var(--muted);
+      font-size: 11px;
+      text-align: right;
+    }
+
+    .quick-grid {
+      display: grid;
+      grid-template-columns: 56px minmax(0, 1fr) minmax(0, 1fr);
+      align-items: center;
+      gap: 6px;
+    }
+
+    .quick-col {
+      color: var(--muted);
+      font-size: 11px;
+      text-align: right;
+    }
+
+    .quick-label {
+      font-size: 13px;
+      font-weight: 650;
+    }
+
+    .quick-note {
+      margin: 9px 0 0;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .quick-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .quick-actions .primary {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: var(--accent-text);
+    }
+
     .mapping-summary {
       margin-top: 8px;
       text-align: center;
@@ -444,7 +516,10 @@
           <div id="controlTitle" class="control-title">Phase A</div>
           <div id="controlStatus" class="control-status"></div>
         </div>
-        <button id="reset" type="button" class="reset-button">Reset</button>
+        <div class="head-actions">
+          <button id="openQuick" type="button" class="reset-button">Quick entry</button>
+          <button id="reset" type="button" class="reset-button">Reset</button>
+        </div>
       </div>
 
       <div id="phaseControls" class="control-body">
@@ -542,6 +617,19 @@
       </div>
     </section>
   </div>
+
+  <dialog id="quickEntry" class="quick-dialog" aria-label="Quick entry">
+    <div class="quick-head">
+      <strong>Quick entry</strong>
+      <span id="quickHint" class="quick-hint"></span>
+    </div>
+    <div id="quickGrid" class="quick-grid"></div>
+    <p class="quick-note">Leave a box empty to keep its current value.</p>
+    <div class="quick-actions">
+      <button id="quickCancel" type="button">Cancel</button>
+      <button id="quickApply" type="button" class="primary">Apply</button>
+    </div>
+  </dialog>
 
   <script>
     const $ = id => document.getElementById(id);
@@ -778,9 +866,18 @@
     /* ── Formatting ──────────────────────────────────────────── */
 
     function formatPower(value) {
-      if (state.units !== 'va') return value.toFixed(3);
-      const k = value / 1000;
-      return Math.abs(k) >= 100 ? k.toFixed(0) : k.toFixed(1);
+      if (state.units === 'va') {
+        const k = value / 1000;
+        return Math.abs(k) >= 100 ? k.toFixed(0) : k.toFixed(1);
+      }
+      // Per-unit normally sits near 1, but real volts and amps get typed in
+      // with the units selector still on per-unit; shed decimals rather than
+      // overflow the metric column.
+      const size = Math.abs(value);
+      if (size >= 1e6) return value.toExponential(2);
+      if (size >= 1000) return value.toFixed(0);
+      if (size >= 100) return value.toFixed(1);
+      return value.toFixed(3);
     }
 
     function formatMagnitude(value) {
@@ -1544,32 +1641,104 @@
     bindAngle('currentAngle', 'currentAngleNum', state.current);
 
     /* Tapping a numeric field should replace its value, not drop the caret at
-       whatever position happened to be touched. Queried by type so any field
-       added later is covered too. */
-    document.querySelectorAll('input[type="number"]').forEach(field => {
-      let focusing = false;
+       whatever position happened to be touched. Delegated from the document so
+       the quick-entry rows, which are built on demand, are covered too. */
+    let selectingField = null;
 
-      field.addEventListener('focus', () => {
-        focusing = true;
-        // The caret is placed after the focus event, so select on the next frame.
-        // select() works on number inputs; setSelectionRange() throws on them.
-        requestAnimationFrame(() => {
-          try { field.select(); } catch (_) {}
-        });
+    document.addEventListener('focusin', event => {
+      const field = event.target;
+      if (!field.matches || !field.matches('input[type="number"]')) return;
+      selectingField = field;
+      // The caret is placed after the focus event, so select on the next frame.
+      // select() works on number inputs; setSelectionRange() throws on them.
+      requestAnimationFrame(() => {
+        try { field.select(); } catch (_) {}
       });
-
-      // The pointer release that delivered focus would otherwise collapse the
-      // selection again. Only that one is suppressed, so clicking a second time
-      // still positions the caret for editing part of a value.
-      const keepSelection = event => {
-        if (!focusing) return;
-        focusing = false;
-        event.preventDefault();
-      };
-      field.addEventListener('pointerup', keepSelection);
-      field.addEventListener('mouseup', keepSelection);
-      field.addEventListener('blur', () => { focusing = false; });
     });
+
+    // The pointer release that delivered focus would otherwise collapse the
+    // selection again. Only that one is suppressed, so tapping a second time
+    // still positions the caret for editing part of a value.
+    const keepSelection = event => {
+      if (event.target !== selectingField) return;
+      selectingField = null;
+      event.preventDefault();
+    };
+    document.addEventListener('pointerup', keepSelection);
+    document.addEventListener('mouseup', keepSelection);
+    document.addEventListener('focusout', event => {
+      if (event.target === selectingField) selectingField = null;
+    });
+
+    /* ── Quick entry ─────────────────────────────────────────
+       One dialog holding every angle and magnitude, laid out like a relay
+       metering page, so a full set can be transcribed in one pass. */
+
+    function quickRows() {
+      const rows = activeVoltages().map(key => ({
+        kind: 'v', key, label: vLabelOf(key), colour: colorVar(key)
+      }));
+      phases.forEach(key => rows.push({
+        kind: 'i',
+        key,
+        label: `I${key.toLowerCase()}`,
+        colour: isActiveElement(key) ? colorVar(key) : 'var(--muted)'
+      }));
+      return rows;
+    }
+
+    function openQuickEntry() {
+      $('quickHint').textContent = `${angleSuffix()} angles · ${config().label}`;
+      $('quickGrid').innerHTML =
+        '<span></span><span class="quick-col">Angle</span>' +
+        '<span class="quick-col">Magnitude</span>' +
+        quickRows().map(row => {
+          const angle = toDisplayAngle(
+            row.kind === 'v' ? state.voltage[row.key] : state.current[row.key]
+          );
+          const mag = row.kind === 'v' ? state.vMag[row.key] : state.iMag[row.key];
+          const id = `q_${row.kind}_${row.key}`;
+          return `
+            <label class="quick-label" style="color:${row.colour}" for="${id}_a">${row.label}</label>
+            <input class="num" id="${id}_a" type="number" step="0.1" inputmode="decimal"
+                   data-kind="${row.kind}" data-key="${row.key}" data-field="angle"
+                   value="${angle.toFixed(1)}" data-initial="${angle.toFixed(1)}"
+                   aria-label="${row.label} angle">
+            <input class="num" id="${id}_m" type="number" step="any" min="0" inputmode="decimal"
+                   data-kind="${row.kind}" data-key="${row.key}" data-field="mag"
+                   value="${mag}" data-initial="${mag}"
+                   aria-label="${row.label} magnitude">
+          `;
+        }).join('');
+      $('quickEntry').showModal();
+    }
+
+    function applyQuickEntry() {
+      $('quickGrid').querySelectorAll('input').forEach(input => {
+        // An empty box means "leave this one alone" — Number('') is 0, which
+        // would silently zero an angle. An untouched box is skipped too, so
+        // reopening and applying cannot drift a value by the 0.1 the field
+        // rounds the display to.
+        if (input.value.trim() === '') return;
+        if (input.value === input.dataset.initial) return;
+        const value = Number(input.value);
+        if (!Number.isFinite(value)) return;
+        const { kind, key, field } = input.dataset;
+        if (field === 'angle') {
+          const store = kind === 'v' ? state.voltage : state.current;
+          store[key] = fromDisplayAngle(value);
+        } else if (value >= 0) {
+          const store = kind === 'v' ? state.vMag : state.iMag;
+          store[key] = value;
+        }
+      });
+      $('quickEntry').close();
+      render();
+    }
+
+    $('openQuick').addEventListener('click', openQuickEntry);
+    $('quickCancel').addEventListener('click', () => $('quickEntry').close());
+    $('quickApply').addEventListener('click', applyQuickEntry);
 
     function bindMagnitude(inputId, store) {
       $(inputId).addEventListener('input', () => {
@@ -1598,25 +1767,12 @@
       render();
     });
 
-    function magnitudesAreEven() {
-      const voltageKeys = activeVoltages();
-      const even = (values, keys) => {
-        const max = Math.max(...keys.map(key => values[key]));
-        const min = Math.min(...keys.map(key => values[key]));
-        return max < 1e-12 || (max - min) / max < 0.005;
-      };
-      return even(state.vMag, voltageKeys) && even(state.iMag, phases);
-    }
-
     $('wiring').addEventListener('change', () => {
-      // Preserve the operating point across a mode change when the set is
-      // balanced, so the two meters can be compared directly. Real, unbalanced
-      // data is never rewritten.
-      const rebalance = magnitudesAreEven();
-      const theta = displacementAngle();
+      // Changing the meter configuration must never rewrite entered angles or
+      // magnitudes — lining a set up by hand is slow work. "Balance angles"
+      // is there when a rebuilt set is actually wanted.
       state.wiring = $('wiring').value;
       repairMap();
-      if (rebalance) applyBalanced(theta);
       render();
     });
 
