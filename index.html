@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Three-Phase PF Vector Analyzer</title>
+  <title>PowerVIZ — Metering Element Analyzer</title>
   <style>
     :root {
       color-scheme: light dark;
@@ -70,6 +70,16 @@
       outline-offset: 2px;
     }
 
+    select,
+    input[type="number"] {
+      min-width: 0;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 5px 7px;
+      background: var(--panel);
+      color: var(--text);
+    }
+
     .pf-tool {
       display: grid;
       grid-template-rows: auto minmax(0, 56fr) minmax(0, 44fr);
@@ -111,7 +121,6 @@
     #openB[aria-pressed="true"] { background: var(--phase-b); color: var(--panel); border-color: var(--phase-b); }
     #openC[aria-pressed="true"] { background: var(--phase-c); color: var(--panel); border-color: var(--phase-c); }
 
-    /* System tab selected: accent style */
     #openGeneral[aria-pressed="true"] {
       border-color: var(--accent);
       background: var(--accent);
@@ -151,14 +160,17 @@
       top: 6px;
       left: 7px;
       right: 7px;
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 3px;
       padding: 3px;
       border: 1px solid var(--border);
       border-radius: 11px;
       background: color-mix(in srgb, var(--card) 92%, transparent);
       backdrop-filter: blur(7px);
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 3px;
     }
 
     .metric {
@@ -169,20 +181,34 @@
 
     .metric-label {
       color: var(--muted);
-      font-size: 12px;
+      font-size: 11px;
+      white-space: nowrap;
     }
 
     .metric-value {
       font-size: 16px;
+      white-space: nowrap;
     }
 
     .metric-value.strong {
       font-weight: 650;
     }
 
+    .element-angles {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      padding: 2px 4px 1px;
+      border-top: 1px solid var(--border);
+      margin-top: 3px;
+      font-size: 11px;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+
     .controls-area {
       min-height: 0;
-      overflow: hidden;
+      overflow-y: auto;
       padding: 7px;
       padding-bottom: max(7px, env(safe-area-inset-bottom));
       background: var(--card);
@@ -224,7 +250,7 @@
 
     .control-body {
       display: grid;
-      gap: 7px;
+      gap: 6px;
       margin-top: 7px;
     }
 
@@ -234,10 +260,10 @@
 
     .slider-row {
       display: grid;
-      grid-template-columns: 72px minmax(0, 1fr) 46px;
+      grid-template-columns: 74px minmax(0, 1fr) 64px;
       align-items: center;
       gap: 6px;
-      font-size: 14px;
+      font-size: 13px;
     }
 
     .slider-row input[type="range"] {
@@ -245,26 +271,24 @@
       min-width: 0;
     }
 
-    .slider-output {
+    .mag-row {
+      display: grid;
+      grid-template-columns: 74px minmax(0, 1fr);
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+    }
+
+    .num {
+      width: 100%;
       text-align: right;
     }
 
-    .association-row {
-      display: grid;
-      grid-template-columns: 72px minmax(0, 1fr);
-      align-items: center;
-      gap: 6px;
-      font-size: 14px;
-    }
-
-    .association-select {
-      width: 100%;
-      min-width: 0;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 6px 8px;
-      background: var(--panel);
-      color: var(--text);
+    .note {
+      padding: 2px 0;
+      color: var(--muted);
+      font-size: 11px;
+      font-style: italic;
     }
 
     .action-row {
@@ -275,29 +299,43 @@
 
     .action-row button {
       padding: 7px 8px;
-      font-size: 14px;
+      font-size: 13px;
     }
 
     .general-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-top: 9px;
+      gap: 6px 9px;
     }
 
-    .general-grid label {
-      font-size: 14px;
+    .compact-field {
+      display: grid;
+      grid-template-columns: 78px minmax(0, 1fr);
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+      font-size: 12px;
     }
 
-    .general-grid input {
+    .compact-field input[type="range"] {
       width: 100%;
-      margin-top: 4px;
+      min-width: 0;
+    }
+
+    .general-actions {
+      margin-top: 7px;
+    }
+
+    .general-actions button {
+      width: 100%;
+      padding: 7px 8px;
+      font-size: 13px;
     }
 
     .mapping-summary {
-      margin-top: 10px;
+      margin-top: 8px;
       text-align: center;
-      font-size: 14px;
+      font-size: 12px;
     }
 
     @media (max-width: 420px) {
@@ -324,11 +362,15 @@
       }
 
       .slider-row {
-        grid-template-columns: 66px minmax(0, 1fr) 42px;
+        grid-template-columns: 62px minmax(0, 1fr) 58px;
       }
 
-      .association-row {
-        grid-template-columns: 66px minmax(0, 1fr);
+      .mag-row {
+        grid-template-columns: 62px minmax(0, 1fr);
+      }
+
+      .compact-field {
+        grid-template-columns: 70px minmax(0, 1fr);
       }
     }
   </style>
@@ -350,26 +392,29 @@
 
     <main class="visual-area">
       <div class="metric-bar" aria-live="polite">
-        <div class="metric">
-          <div class="metric-label">PF</div>
-          <div id="pf" class="metric-value strong">0.000</div>
+        <div class="metric-grid">
+          <div class="metric">
+            <div class="metric-label">PF</div>
+            <div id="pf" class="metric-value strong">0.000</div>
+          </div>
+          <div class="metric">
+            <div id="labelP" class="metric-label">P</div>
+            <div id="p" class="metric-value">0.000</div>
+          </div>
+          <div class="metric">
+            <div id="labelQ" class="metric-label">Q</div>
+            <div id="q" class="metric-value">0.000</div>
+          </div>
+          <div class="metric">
+            <div id="labelS" class="metric-label">S</div>
+            <div id="s" class="metric-value">0.000</div>
+          </div>
         </div>
-        <div class="metric">
-          <div class="metric-label">P</div>
-          <div id="p" class="metric-value">0.000</div>
-        </div>
-        <div class="metric">
-          <div class="metric-label">Q</div>
-          <div id="q" class="metric-value">0.000</div>
-        </div>
-        <div class="metric">
-          <div class="metric-label">S</div>
-          <div id="s" class="metric-value">0.000</div>
-        </div>
+        <div id="elementAngles" class="element-angles"></div>
       </div>
 
       <svg id="visual" class="visual-surface" viewBox="0 0 900 650"
-           role="img" aria-label="Three-phase electrical visualization">
+           role="img" aria-label="Metering element phasor visualization">
         <defs id="definitions"></defs>
         <g id="visualContent"></g>
       </svg>
@@ -386,31 +431,47 @@
       <div class="control-head">
         <div>
           <div id="controlTitle" class="control-title">Phase A</div>
-          <div id="controlStatus" class="control-status">IA associated with VA</div>
+          <div id="controlStatus" class="control-status"></div>
         </div>
         <button id="reset" type="button" class="reset-button">Reset</button>
       </div>
 
       <div id="phaseControls" class="control-body">
-        <div class="slider-row">
-          <label id="voltageLabel" for="voltageAngle">VA angle</label>
-          <input id="voltageAngle" type="range" min="0" max="359" step="1">
-          <output id="voltageOutput" class="slider-output"></output>
+        <div id="voltageGroup">
+          <div class="slider-row">
+            <label id="voltageLabel" for="voltageAngle">Van angle</label>
+            <input id="voltageAngle" type="range" min="0" max="359.5" step="0.5">
+            <input id="voltageAngleNum" class="num" type="number" step="0.1" inputmode="decimal">
+          </div>
+          <div class="mag-row" style="margin-top:6px">
+            <label id="voltageMagLabel" for="voltageMag">Van mag</label>
+            <input id="voltageMag" class="num" type="number" step="any" min="0" inputmode="decimal">
+          </div>
         </div>
 
-        <div class="slider-row">
-          <label id="currentLabel" for="currentAngle">IA angle</label>
-          <input id="currentAngle" type="range" min="0" max="359" step="1">
-          <output id="currentOutput" class="slider-output"></output>
+        <div id="noVoltageNote" class="note" hidden>
+          No B-phase voltage input exists in open delta — this is a 2-element meter.
         </div>
 
-        <div class="association-row">
-          <label for="association">Associate</label>
-          <select id="association" class="association-select">
-            <option value="A">VA</option>
-            <option value="B">VB</option>
-            <option value="C">VC</option>
-          </select>
+        <div>
+          <div class="slider-row">
+            <label id="currentLabel" for="currentAngle">Ia angle</label>
+            <input id="currentAngle" type="range" min="0" max="359.5" step="0.5">
+            <input id="currentAngleNum" class="num" type="number" step="0.1" inputmode="decimal">
+          </div>
+          <div class="mag-row" style="margin-top:6px">
+            <label id="currentMagLabel" for="currentMag">Ia mag</label>
+            <input id="currentMag" class="num" type="number" step="any" min="0" inputmode="decimal">
+          </div>
+        </div>
+
+        <div id="associationRow" class="mag-row">
+          <label for="association">Element V</label>
+          <select id="association"></select>
+        </div>
+
+        <div id="inactiveNote" class="note" hidden>
+          Ib drives no metering element here — it contributes nothing to P or Q.
         </div>
 
         <div class="action-row">
@@ -421,15 +482,51 @@
 
       <div id="generalControls" class="general-controls" hidden>
         <div class="general-grid">
-          <label>
-            Current magnitude
-            <input id="currentMagnitude" type="range" min="0" max="1.5" step="0.05" value="1">
+          <label class="compact-field">
+            <span>Wiring</span>
+            <select id="wiring">
+              <option value="wye">Wye · 3 element</option>
+              <option value="openDelta">Open delta · 2 element</option>
+            </select>
           </label>
-          <label>
-            3D perspective
-            <input id="perspective" type="range" min="10" max="55" step="1" value="30">
+          <label class="compact-field">
+            <span>Sequence</span>
+            <select id="sequence">
+              <option value="ABC">ABC</option>
+              <option value="ACB">ACB</option>
+            </select>
+          </label>
+          <label class="compact-field">
+            <span>Angles</span>
+            <select id="angleInput">
+              <option value="lead">Lead (CCW)</option>
+              <option value="lag">Lag (relay)</option>
+            </select>
+          </label>
+          <label class="compact-field">
+            <span>Units</span>
+            <select id="units">
+              <option value="pu">Per unit</option>
+              <option value="va">Volts · amps</option>
+            </select>
+          </label>
+          <label class="compact-field" id="vBasisField">
+            <span>V entry</span>
+            <select id="vBasis">
+              <option value="lineNeutral">Line-neutral ×&#8730;3</option>
+              <option value="lineLine">Line-line ×1</option>
+            </select>
+          </label>
+          <label class="compact-field">
+            <span>3D angle</span>
+            <input id="perspective" type="range" min="10" max="45" step="1" value="30">
           </label>
         </div>
+
+        <div class="general-actions">
+          <button id="reverseSequence" type="button">Reverse sequence (swap B↔C conductors)</button>
+        </div>
+
         <div id="mappingSummary" class="mapping-summary"></div>
       </div>
     </section>
@@ -439,11 +536,21 @@
     const $ = id => document.getElementById(id);
     const phases = ['A', 'B', 'C'];
 
+    /* ── State ───────────────────────────────────────────────
+       Angles are CCW / lead-positive internally, always. The lead/lag
+       selector converts only at the UI boundary. */
+
     const state = {
+      wiring: 'wye',                        // 'wye' | 'openDelta'
+      sequence: 'ABC',                      // 'ABC' | 'ACB'
       voltage: { A: 0, B: 240, C: 120 },
-      current: { A: 272, B: 152, C: 32 },
-      map: { A: 'A', B: 'B', C: 'C' },
-      currentMagnitude: 1,
+      current: { A: 330, B: 210, C: 90 },
+      vMag: { A: 1, B: 1, C: 1 },
+      iMag: { A: 1, B: 1, C: 1 },
+      map: { A: 'A', B: 'B', C: 'C' },      // element -> voltage input
+      angleInput: 'lead',                   // UI only
+      vBasis: 'lineNeutral',                // open delta only: how vMag was entered
+      units: 'pu',                          // 'pu' | 'va'
       perspective: 30,
       activePhase: 'A',
       activeView: 'phasor',
@@ -465,39 +572,262 @@
       return `var(--phase-${phase.toLowerCase()})`;
     }
 
+    /* ── Wiring configuration ────────────────────────────────
+       A meter has elements, not phases. Each element multiplies one
+       voltage input by one current input. The configuration decides how
+       many elements exist and what kind of voltage each one sees. */
+
+    const WIRING = {
+      wye: {
+        label: 'Wye · 3 element',
+        elements: ['A', 'B', 'C'],
+        vLabel: { A: 'Van', B: 'Vbn', C: 'Vcn' },
+        vScale: 1,
+        balanced: {
+          ABC: { A: 0, B: 240, C: 120 },
+          ACB: { A: 0, B: 120, C: 240 }
+        }
+      },
+      openDelta: {
+        label: 'Open delta · 2 element',
+        elements: ['A', 'C'],
+        vLabel: { A: 'Vab', C: 'Vcb' },
+        vScale: Math.sqrt(3),
+        // Vcb is already the inverted quantity, so 60 degrees of separation
+        // is correct here, not 120.
+        balanced: {
+          ABC: { A: 0, C: 60 },
+          ACB: { A: 0, C: 300 }
+        }
+      }
+    };
+
+    const config = () => WIRING[state.wiring];
+    const activeElements = () => config().elements;
+    const activeVoltages = () => activeElements();
+    const isActiveV = key => activeVoltages().includes(key);
+    const isActiveElement = key => activeElements().includes(key);
+    const vLabelOf = key => config().vLabel[key] || `V${key.toLowerCase()}`;
+
+    /* Open-delta voltages entered straight off a relay screen are already
+       line-to-line, so they need no conversion. Entered as line-to-neutral
+       they carry the sqrt(3) factor that makes both wiring modes report the
+       same power for the same load. */
+    function voltageScale() {
+      if (state.wiring !== 'openDelta') return 1;
+      return state.vBasis === 'lineLine' ? 1 : config().vScale;
+    }
+
+    /* ── Metering model ──────────────────────────────────────
+       One term per element. S = hypot(P, Q), confirmed against hardware. */
+
     function calculate() {
+      const scale = voltageScale();
+      const elements = activeElements();
       let p = 0;
       let q = 0;
+      const angles = {};
 
-      phases.forEach(currentPhase => {
-        const voltagePhase = state.map[currentPhase];
+      elements.forEach(element => {
+        const voltagePhase = state.map[element];
         const delta = signedAngle(
-          state.voltage[voltagePhase] - state.current[currentPhase]
+          state.voltage[voltagePhase] - state.current[element]
         );
-        p += state.currentMagnitude * Math.cos(rad(delta));
-        q += state.currentMagnitude * Math.sin(rad(delta));
+        const m = scale * state.vMag[voltagePhase] * state.iMag[element];
+        p += m * Math.cos(rad(delta));
+        q += m * Math.sin(rad(delta));
+        angles[element] = delta;
       });
 
       const s = Math.hypot(p, q);
-      return { p, q, s, pf: s > 0.000001 ? p / s : 0 };
+      return { p, q, s, pf: s > 0.000001 ? p / s : 0, angles, elements };
     }
 
-    function enforcePermutation(changedCurrent, newVoltage) {
-      const oldVoltage = state.map[changedCurrent];
-      const conflict = phases.find(
-        phase => phase !== changedCurrent && state.map[phase] === newVoltage
+    /* The association is a permutation over the *active* voltages only.
+       Mapping a current onto a voltage that is not in the sum would silently
+       drop it from the power calculation. */
+
+    function enforcePermutation(element, newVoltage) {
+      const old = state.map[element];
+      const conflict = activeElements().find(
+        item => item !== element && state.map[item] === newVoltage
       );
 
-      state.map[changedCurrent] = newVoltage;
-      if (conflict) state.map[conflict] = oldVoltage;
+      state.map[element] = newVoltage;
+      if (conflict) state.map[conflict] = old;
     }
 
-    function updateMetrics() {
+    function repairMap() {
+      const available = activeVoltages();
+      const elements = activeElements();
+      const claimed = new Set();
+
+      elements.forEach(element => {
+        const voltage = state.map[element];
+        if (available.includes(voltage) && !claimed.has(voltage)) claimed.add(voltage);
+        else state.map[element] = null;
+      });
+
+      elements.forEach(element => {
+        if (state.map[element] !== null) return;
+        const free = available.find(voltage => !claimed.has(voltage));
+        state.map[element] = free;
+        claimed.add(free);
+      });
+    }
+
+    /* ── Angle entry convention ──────────────────────────────
+       Relay data is printed as lag angles; internal state is CCW. The
+       conversion is its own inverse, and it never runs inside calculate(). */
+
+    function toDisplayAngle(internal) {
+      return state.angleInput === 'lag' ? normalize(360 - internal) : normalize(internal);
+    }
+
+    function fromDisplayAngle(shown) {
+      return state.angleInput === 'lag' ? normalize(360 - shown) : normalize(shown);
+    }
+
+    const angleSuffix = () => (state.angleInput === 'lag' ? 'lag' : 'lead');
+
+    /* ── Formatting ──────────────────────────────────────────── */
+
+    function formatPower(value) {
+      if (state.units !== 'va') return value.toFixed(3);
+      const k = value / 1000;
+      return Math.abs(k) >= 100 ? k.toFixed(0) : k.toFixed(1);
+    }
+
+    function formatMagnitude(value) {
+      if (state.units !== 'va') return value.toFixed(2);
+      return Math.abs(value) >= 100 ? value.toFixed(0) : value.toFixed(1);
+    }
+
+    function powerUnits() {
+      return state.units === 'va'
+        ? { p: 'P (kW)', q: 'Q (kvar)', s: 'S (kVA)' }
+        : { p: 'P', q: 'Q', s: 'S' };
+    }
+
+    function updateMetrics(result) {
+      const units = powerUnits();
+      $('labelP').textContent = units.p;
+      $('labelQ').textContent = units.q;
+      $('labelS').textContent = units.s;
+
+      const direction = Math.abs(result.q) < 1e-9 ? 'unity'
+        : result.q > 0 ? 'Lag' : 'Lead';
+
+      $('pf').textContent = `${result.pf.toFixed(3)} ${direction}`;
+      $('p').textContent = formatPower(result.p);
+      $('q').textContent = formatPower(result.q);
+      $('s').textContent = formatPower(result.s);
+
+      $('elementAngles').innerHTML = result.elements.map(element => {
+        const delta = result.angles[element];
+        const word = Math.abs(delta) < 0.05 ? '' : delta > 0 ? ' lag' : ' lead';
+        return `<span style="color:${colorVar(element)}">` +
+               `&theta;${element} ${Math.abs(delta).toFixed(1)}&deg;${word}</span>`;
+      }).join('');
+    }
+
+    /* ── Balanced presets ────────────────────────────────────
+       theta is the true displacement angle, taken from the resultant so the
+       derivation works identically in both wiring modes. */
+
+    function applyBalanced(theta) {
+      const cfg = config();
+      const preset = cfg.balanced[state.sequence];
+      Object.keys(preset).forEach(key => { state.voltage[key] = preset[key]; });
+
+      // In open delta the A input is Vab, which leads Van by 30 degrees in ABC
+      // rotation and lags it by 30 in ACB.
+      const van = state.wiring === 'wye'
+        ? state.voltage.A
+        : normalize(state.voltage.A + (state.sequence === 'ABC' ? -30 : 30));
+
+      const step = state.sequence === 'ABC' ? -120 : 120;
+      const ia = normalize(van - theta);
+      state.current.A = ia;
+      state.current.B = normalize(ia + step);
+      state.current.C = normalize(ia + 2 * step);
+
+      const vKeys = activeVoltages();
+      const vAvg = vKeys.reduce((sum, key) => sum + state.vMag[key], 0) / vKeys.length;
+      vKeys.forEach(key => { state.vMag[key] = vAvg; });
+
+      const iAvg = phases.reduce((sum, key) => sum + state.iMag[key], 0) / 3;
+      phases.forEach(key => { state.iMag[key] = iAvg; });
+    }
+
+    function displacementAngle() {
       const result = calculate();
-      $('pf').textContent = result.pf.toFixed(3);
-      $('p').textContent = result.p.toFixed(3);
-      $('q').textContent = result.q.toFixed(3);
-      $('s').textContent = result.s.toFixed(3);
+      return result.s > 1e-9 ? deg(Math.atan2(result.q, result.p)) : 30;
+    }
+
+    /* ── Sequence reversal ───────────────────────────────────
+       This is the physical act of swapping two supply conductors, not a
+       mirroring of the diagram. P, Q and S must come out unchanged: rotation
+       direction does not change the power delivered to a load. */
+
+    function reverseSequence() {
+      if (state.wiring === 'wye') {
+        ['voltage', 'vMag', 'current', 'iMag'].forEach(key => {
+          const held = state[key].B;
+          state[key].B = state[key].C;
+          state[key].C = held;
+        });
+      } else {
+        // Swapping conductors b and c upstream of the meter gives
+        //   Vab' = Vab - Vcb,  Vcb' = -Vcb,  Ib <-> Ic
+        // Substituting Ia + Ib + Ic = 0 into the two-element sum shows S is
+        // preserved exactly, with no balance assumption.
+        const vA = { re: state.vMag.A * Math.cos(rad(state.voltage.A)),
+                     im: state.vMag.A * Math.sin(rad(state.voltage.A)) };
+        const vC = { re: state.vMag.C * Math.cos(rad(state.voltage.C)),
+                     im: state.vMag.C * Math.sin(rad(state.voltage.C)) };
+        const newA = { re: vA.re - vC.re, im: vA.im - vC.im };
+        const newC = { re: -vC.re, im: -vC.im };
+        const previousA = state.voltage.A;
+
+        state.vMag.A = Math.hypot(newA.re, newA.im);
+        state.vMag.C = Math.hypot(newC.re, newC.im);
+        if (state.vMag.A > 1e-12) state.voltage.A = normalize(deg(Math.atan2(newA.im, newA.re)));
+        if (state.vMag.C > 1e-12) state.voltage.C = normalize(deg(Math.atan2(newC.im, newC.re)));
+
+        let held = state.current.B;
+        state.current.B = state.current.C;
+        state.current.C = held;
+        held = state.iMag.B;
+        state.iMag.B = state.iMag.C;
+        state.iMag.C = held;
+
+        // Re-pin Vab to the angle it had before, so the picture does not spin.
+        // A rotation common to every phasor leaves P, Q and S untouched.
+        const shift = previousA - state.voltage.A;
+        phases.forEach(key => {
+          state.voltage[key] = normalize(state.voltage[key] + shift);
+          state.current[key] = normalize(state.current[key] + shift);
+        });
+      }
+
+      state.sequence = state.sequence === 'ABC' ? 'ACB' : 'ABC';
+    }
+
+    /* ── Controls ────────────────────────────────────────────── */
+
+    function setValue(element, value) {
+      if (document.activeElement !== element) element.value = value;
+    }
+
+    function buildAssociationOptions() {
+      const select = $('association');
+      const key = `${state.wiring}`;
+      if (select.dataset.built === key) return;
+      select.innerHTML = activeVoltages()
+        .map(voltage => `<option value="${voltage}">${vLabelOf(voltage)}</option>`)
+        .join('');
+      select.dataset.built = key;
     }
 
     function updateControls() {
@@ -513,131 +843,380 @@
       $('openGeneral').setAttribute('aria-pressed', String(general));
 
       if (general) {
-        $('controlTitle').textContent = 'System controls';
+        $('controlTitle').textContent = 'System setup';
         $('controlTitle').style.color = '';
-        $('controlStatus').textContent = 'Visualization and current magnitude';
+        $('controlStatus').textContent =
+          `${config().label} · ${state.sequence} rotation · angles in ${angleSuffix()}`;
         $('controlStatus').style.color = '';
-        $('currentMagnitude').value = state.currentMagnitude;
-        $('perspective').value = state.perspective;
-        $('mappingSummary').innerHTML = phases.map(item => {
-          const mapped = state.map[item];
-          return `<span style="color:${colorVar(mapped)}">I${item}→V${mapped}</span>`;
+
+        setValue($('wiring'), state.wiring);
+        setValue($('sequence'), state.sequence);
+        setValue($('angleInput'), state.angleInput);
+        setValue($('units'), state.units);
+        setValue($('vBasis'), state.vBasis);
+        setValue($('perspective'), state.perspective);
+        $('vBasisField').hidden = state.wiring !== 'openDelta';
+
+        $('mappingSummary').innerHTML = activeElements().map(element => {
+          const voltage = state.map[element];
+          return `<span style="color:${colorVar(element)}">` +
+                 `I${element.toLowerCase()} &rarr; ${vLabelOf(voltage)}</span>`;
         }).join(' &nbsp; ');
         return;
       }
 
+      const hasVoltage = isActiveV(phase);
+      const isElement = isActiveElement(phase);
       const associated = state.map[phase];
+
+      $('voltageGroup').hidden = !hasVoltage;
+      $('noVoltageNote').hidden = hasVoltage;
+      $('associationRow').hidden = !isElement;
+      $('inactiveNote').hidden = isElement;
+
       $('controlTitle').textContent = `Phase ${phase}`;
       $('controlTitle').style.color = colorVar(phase);
-      $('controlStatus').textContent = `I${phase} associated with V${associated}`;
-      $('controlStatus').style.color = colorVar(associated);
-      $('voltageLabel').textContent = `V${associated} angle`;
-      $('currentLabel').textContent = `I${phase} angle`;
-      $('voltageAngle').value = state.voltage[associated];
-      $('currentAngle').value = state.current[phase];
-      $('voltageOutput').textContent = `${Math.round(state.voltage[associated])}°`;
-      $('currentOutput').textContent = `${Math.round(state.current[phase])}°`;
-      $('association').value = associated;
-      $('association').style.borderColor = colorVar(associated);
+      $('controlStatus').textContent = isElement
+        ? `Element ${phase}: ${vLabelOf(associated)} × I${phase.toLowerCase()}`
+        : `I${phase.toLowerCase()} — no metering element`;
+      $('controlStatus').style.color = isElement ? colorVar(associated) : '';
+
+      if (hasVoltage) {
+        const label = vLabelOf(phase);
+        $('voltageLabel').textContent = `${label} ∠ ${angleSuffix()}`;
+        $('voltageMagLabel').textContent = `${label} mag`;
+        setValue($('voltageAngle'), toDisplayAngle(state.voltage[phase]));
+        setValue($('voltageAngleNum'), toDisplayAngle(state.voltage[phase]).toFixed(1));
+        setValue($('voltageMag'), state.vMag[phase]);
+      }
+
+      const currentLabel = `I${phase.toLowerCase()}`;
+      $('currentLabel').textContent = `${currentLabel} ∠ ${angleSuffix()}`;
+      $('currentMagLabel').textContent = `${currentLabel} mag`;
+      setValue($('currentAngle'), toDisplayAngle(state.current[phase]));
+      setValue($('currentAngleNum'), toDisplayAngle(state.current[phase]).toFixed(1));
+      setValue($('currentMag'), state.iMag[phase]);
+
+      if (isElement) {
+        buildAssociationOptions();
+        setValue($('association'), associated);
+        $('association').style.borderColor = colorVar(associated);
+      }
     }
 
-    const cx = 450, cy = 355;
+    /* ── SVG geometry ────────────────────────────────────────── */
+
+    const CX = 450;
+    const CY = 355;
+    const R = 195;
+
+    // Each view frames its own content, so none of them waste the panel on
+    // empty margin.
+    const VIEWBOX = {
+      phasor: '150 128 615 528',
+      sine: '40 92 840 568',
+      threeD: '60 100 830 560'
+    };
 
     function phasorPoint(angle, length) {
       return {
-        x: cx + length * Math.cos(rad(angle)),
-        y: cy - length * Math.sin(rad(angle))
+        x: CX + length * Math.cos(rad(angle)),
+        y: CY - length * Math.sin(rad(angle))
       };
     }
 
-    // Quadrant-aware label placement: avoids origin and SVG edges.
-    function labelPos(pt, isBelow) {
-      const leftHalf  = pt.x < cx;
-      const lowerHalf = pt.y > cy;
+    // Quadrant-aware label placement: keeps text away from the origin and the
+    // edges of the viewBox.
+    function labelPos(point, isBelow) {
+      const leftHalf = point.x < CX;
+      const lowerHalf = point.y > CY;
       return {
-        x:      leftHalf ? pt.x - 9 : pt.x + 9,
-        y:      lowerHalf ? pt.y + (isBelow ? 22 : 6) : pt.y + (isBelow ? -5 : -12),
+        x: leftHalf ? point.x - 9 : point.x + 9,
+        y: lowerHalf ? point.y + (isBelow ? 22 : 6) : point.y + (isBelow ? -5 : -12),
         anchor: leftHalf ? 'end' : 'start'
       };
     }
 
+    function normalizer(magnitudes, keys) {
+      const max = Math.max(...keys.map(key => Math.abs(magnitudes[key])), 0);
+      if (max < 1e-12) return () => 0;
+      return key => Math.abs(magnitudes[key]) / max;
+    }
+
+    function maxMagnitude(magnitudes, keys) {
+      return Math.max(...keys.map(key => Math.abs(magnitudes[key])), 0);
+    }
+
     function legendMarkup() {
+      const items = [
+        { color: colorVar('A'), text: 'Phase A' },
+        { color: colorVar('B'), text: 'Phase B' },
+        { color: colorVar('C'), text: 'Phase C' },
+        { color: 'var(--muted)', text: 'Voltage' },
+        { color: 'var(--muted)', text: 'Current', dash: '7 4', width: 2.5 }
+      ];
+      if (activeElements().length < 3) {
+        items.push({ color: 'var(--muted)', text: 'No element', opacity: 0.4 });
+      }
+
+      const widths = items.map(item => 22 + item.text.length * 6.6 + 16);
+      const total = widths.reduce((sum, width) => sum + width, 0) - 16;
+      let x = CX - total / 2;
+      let markup = '';
+
+      items.forEach((item, index) => {
+        const dash = item.dash ? `stroke-dasharray="${item.dash}"` : '';
+        const opacity = item.opacity || 1;
+        markup += `
+          <line x1="${x}" y1="638" x2="${x + 16}" y2="638" stroke="${item.color}"
+                stroke-width="${item.width || 3.5}" opacity="${opacity}" ${dash}></line>
+          <text x="${x + 21}" y="642" fill="${item.color}" font-size="12"
+                opacity="${opacity}">${item.text}</text>
+        `;
+        x += widths[index];
+      });
+
+      return markup;
+    }
+
+    /* ── Phasor view ─────────────────────────────────────────── */
+
+    function graduationsMarkup() {
+      let markup = '';
+
+      // Graduations sit inside the ring. Outside it is reserved for phasor tip
+      // labels, which would otherwise collide with every 30-degree mark.
+      for (let a = 0; a < 360; a += 10) {
+        const major = a % 30 === 0;
+        const outer = phasorPoint(a, R);
+        const inner = phasorPoint(a, R - (major ? 14 : 7));
+        markup += `<line x1="${inner.x}" y1="${inner.y}" x2="${outer.x}" y2="${outer.y}"
+                         stroke="var(--border)" stroke-width="${major ? 1.5 : 1}"></line>`;
+        if (!major) continue;
+        const label = phasorPoint(a, R - 26);
+        markup += `<text x="${label.x}" y="${label.y + 4}" text-anchor="middle"
+                         fill="var(--muted)" font-size="10">${Math.round(toDisplayAngle(a))}</text>`;
+      }
+
+      return markup;
+    }
+
+    function quadrantMarkup() {
+      // The chart is read with lag downward, so a current drawn below the axis
+      // is a lagging current and contributes +Q. The quadrant labels follow that
+      // geometry rather than the textbook P-Q plane.
+      const sectors = [
+        { from: 270, to: 360, at: 335, sign: '+P +Q', text: 'import · lag' },
+        { from: 0, to: 90, at: 25, sign: '+P −Q', text: 'import · lead' },
+        { from: 90, to: 180, at: 155, sign: '−P −Q', text: 'export · lead' },
+        { from: 180, to: 270, at: 205, sign: '−P +Q', text: 'export · lag' }
+      ];
+
+      let markup = '';
+      sectors.forEach((sector, index) => {
+        const start = phasorPoint(sector.from, R);
+        const end = phasorPoint(sector.to, R);
+        markup += `<path d="M ${CX} ${CY} L ${start.x} ${start.y}
+                            A ${R} ${R} 0 0 0 ${end.x} ${end.y} Z"
+                         fill="var(--text)" opacity="${index % 2 === 0 ? 0.045 : 0.015}"></path>`;
+      });
+
+      sectors.forEach(sector => {
+        const pos = phasorPoint(sector.at, 272);
+        markup += `
+          <text x="${pos.x}" y="${pos.y - 4}" text-anchor="middle"
+                fill="var(--muted)" font-size="11" font-weight="600">${sector.sign}</text>
+          <text x="${pos.x}" y="${pos.y + 10}" text-anchor="middle"
+                fill="var(--muted)" font-size="10">${sector.text}</text>
+        `;
+      });
+
+      return markup;
+    }
+
+    // Each ring is labelled where it crosses the horizontal axis on the left,
+    // which is the emptiest band on the chart.
+    function ringLabelMarkup(vMax, iMax) {
+      if (vMax < 1e-12 && iMax < 1e-12) return '';
+      const line = (radius, factor) =>
+        `<text x="${CX - radius + 5}" y="${CY - 13}" fill="var(--muted)" font-size="10">` +
+        `${formatMagnitude(vMax * factor)} V · ${formatMagnitude(iMax * factor)} I</text>`;
+      return line(R, 1) + line(R / 2, 0.5);
+    }
+
+    function rotationMarkup() {
+      // Phasors always turn counter-clockwise; the sequence is the order in
+      // which they pass the reference, so only the label changes.
+      const radius = 248;
+      const start = phasorPoint(250, radius);
+      const end = phasorPoint(290, radius);
       return `
-        <line x1="246" y1="638" x2="262" y2="638" stroke="${colorVar('A')}" stroke-width="3.5"></line>
-        <text x="266" y="642" fill="${colorVar('A')}" font-size="12">Phase A</text>
-        <line x1="336" y1="638" x2="352" y2="638" stroke="${colorVar('B')}" stroke-width="3.5"></line>
-        <text x="356" y="642" fill="${colorVar('B')}" font-size="12">Phase B</text>
-        <line x1="426" y1="638" x2="442" y2="638" stroke="${colorVar('C')}" stroke-width="3.5"></line>
-        <text x="446" y="642" fill="${colorVar('C')}" font-size="12">Phase C</text>
-        <line x1="526" y1="630" x2="526" y2="646" stroke="var(--border)" stroke-width="1"></line>
-        <line x1="534" y1="638" x2="552" y2="638" stroke="var(--muted)" stroke-width="3.5"></line>
-        <text x="556" y="642" fill="var(--muted)" font-size="12">Voltage</text>
-        <line x1="613" y1="638" x2="631" y2="638" stroke="var(--muted)" stroke-width="2.5"
-              stroke-dasharray="7 4"></line>
-        <text x="635" y="642" fill="var(--muted)" font-size="12">Current</text>
+        <path d="M ${start.x} ${start.y} A ${radius} ${radius} 0 0 0 ${end.x} ${end.y}"
+              fill="none" stroke="var(--muted)" stroke-width="2"
+              marker-end="url(#rotationArrow)"></path>
+        <text x="${end.x + 14}" y="${end.y + 4}" fill="var(--muted)" font-size="12">
+          Rotation ${state.sequence}
+        </text>
       `;
     }
 
-    function drawPhasor() {
+    function elementArcMarkup(result) {
+      let markup = '';
+
+      result.elements.forEach((element, index) => {
+        const voltagePhase = state.map[element];
+        const delta = result.angles[element];
+        const radius = 74 + index * 22;
+        const from = state.voltage[voltagePhase];
+        const start = phasorPoint(from, radius);
+        const end = phasorPoint(from - delta, radius);
+        const sweep = delta >= 0 ? 1 : 0;
+        const mid = phasorPoint(from - delta / 2, radius + 12);
+        const opacity = state.activePhase === element || state.activePhase === 'general' ? 1 : 0.4;
+
+        markup += `
+          <path d="M ${start.x} ${start.y} A ${radius} ${radius} 0 0 ${sweep} ${end.x} ${end.y}"
+                fill="none" stroke="${colorVar(element)}" stroke-width="2"
+                opacity="${opacity}"></path>
+          <text x="${mid.x}" y="${mid.y}" text-anchor="middle" fill="${colorVar(element)}"
+                font-size="12" font-weight="600" opacity="${opacity}">
+            ${Math.abs(delta).toFixed(1)}&#176;
+          </text>
+        `;
+      });
+
+      return markup;
+    }
+
+    function resultantMarkup(result) {
+      const total = result.elements.reduce((sum, element) => {
+        return sum + voltageScale() * state.vMag[state.map[element]] * state.iMag[element];
+      }, 0);
+      if (total < 1e-12 || result.s < 1e-12) return '';
+
+      // Drawn at the lag angle of the resultant so it sits in the same
+      // geometric half as the currents that produced it.
+      const angle = normalize(-deg(Math.atan2(result.q, result.p)));
+      const length = 0.85 * R * Math.min(1, result.s / total);
+      const tip = phasorPoint(angle, length);
+      const label = phasorPoint(angle, length + 20);
+
+      return `
+        <line x1="${CX}" y1="${CY}" x2="${tip.x}" y2="${tip.y}" stroke="var(--accent)"
+              stroke-width="3" stroke-dasharray="3 4" marker-end="url(#arrowS)"></line>
+        <text x="${label.x}" y="${label.y + 4}" fill="var(--accent)" font-size="13"
+              font-weight="600" text-anchor="middle">S</text>
+      `;
+    }
+
+    function drawPhasor(result) {
+      $('visual').setAttribute('viewBox', VIEWBOX.phasor);
+      const voltageKeys = activeVoltages();
+      const vNorm = normalizer(state.vMag, voltageKeys);
+      const iNorm = normalizer(state.iMag, phases);
+      const vMax = maxMagnitude(state.vMag, voltageKeys);
+      const iMax = maxMagnitude(state.iMag, phases);
+
       $('definitions').innerHTML = phases.map(phase => `
         <marker id="arrow${phase}" markerWidth="10" markerHeight="10"
                 refX="9" refY="5" orient="auto">
           <path d="M0,0 L10,5 L0,10z" fill="${colorVar(phase)}"></path>
         </marker>
-      `).join('');
-
-      let markup = `
-        <circle cx="${cx}" cy="${cy}" r="245" fill="none" stroke="var(--border)"></circle>
-        <circle cx="${cx}" cy="${cy}" r="162" fill="none" stroke="var(--border)"
-                stroke-dasharray="5 7"></circle>
-        <line x1="165" y1="${cy}" x2="735" y2="${cy}" stroke="var(--border)"></line>
-        <line x1="${cx}" y1="70" x2="${cx}" y2="625" stroke="var(--border)"></line>
-        <circle cx="${cx}" cy="${cy}" r="5" fill="var(--text)"></circle>
+      `).join('') + `
+        <marker id="arrowMuted" markerWidth="10" markerHeight="10"
+                refX="9" refY="5" orient="auto">
+          <path d="M0,0 L10,5 L0,10z" fill="var(--muted)"></path>
+        </marker>
+        <marker id="arrowS" markerWidth="10" markerHeight="10"
+                refX="9" refY="5" orient="auto">
+          <path d="M0,0 L10,5 L0,10z" fill="var(--accent)"></path>
+        </marker>
+        <marker id="rotationArrow" markerWidth="9" markerHeight="9"
+                refX="8" refY="4.5" orient="auto">
+          <path d="M0,0 L9,4.5 L0,9z" fill="var(--muted)"></path>
+        </marker>
       `;
 
-      phases.forEach(phase => {
-        const point = phasorPoint(state.voltage[phase], 220);
-        const lp = labelPos(point, false);
+      let markup = quadrantMarkup();
+
+      markup += `
+        <circle cx="${CX}" cy="${CY}" r="${R}" fill="none" stroke="var(--border)"></circle>
+        <circle cx="${CX}" cy="${CY}" r="${R / 2}" fill="none" stroke="var(--border)"
+                stroke-dasharray="5 7"></circle>
+        <line x1="${CX - R - 24}" y1="${CY}" x2="${CX + R + 24}" y2="${CY}"
+              stroke="var(--border)"></line>
+        <line x1="${CX}" y1="${CY - R - 24}" x2="${CX}" y2="${CY + R + 24}"
+              stroke="var(--border)"></line>
+      `;
+
+      markup += graduationsMarkup();
+      markup += ringLabelMarkup(vMax, iMax);
+      markup += rotationMarkup();
+      markup += elementArcMarkup(result);
+
+      const emphasis = key =>
+        state.activePhase === 'general' || state.activePhase === key ? 1 : 0.35;
+
+      voltageKeys.forEach(phase => {
+        const length = R * vNorm(phase);
+        if (length < 1) return;
+        const point = phasorPoint(state.voltage[phase], length);
+        const label = labelPos(point, false);
         markup += `
-          <g data-kind="voltage" data-phase="${phase}" style="cursor:grab">
-            <line x1="${cx}" y1="${cy}" x2="${point.x}" y2="${point.y}"
+          <g data-kind="voltage" data-phase="${phase}" style="cursor:grab"
+             opacity="${emphasis(phase)}">
+            <line x1="${CX}" y1="${CY}" x2="${point.x}" y2="${point.y}"
                   stroke="${colorVar(phase)}" stroke-width="5"
                   marker-end="url(#arrow${phase})"></line>
             <circle cx="${point.x}" cy="${point.y}" r="20" fill="transparent"></circle>
             <circle cx="${point.x}" cy="${point.y}" r="6" fill="${colorVar(phase)}"></circle>
-            <text x="${lp.x}" y="${lp.y}" fill="${colorVar(phase)}"
-                  font-size="17" font-weight="600"
-                  text-anchor="${lp.anchor}">V${phase}</text>
+            <text x="${label.x}" y="${label.y}" fill="${colorVar(phase)}" font-size="16"
+                  font-weight="600" text-anchor="${label.anchor}">${vLabelOf(phase)}</text>
           </g>
         `;
       });
 
-      phases.forEach(currentPhase => {
-        const associated = state.map[currentPhase];
-        const point = phasorPoint(
-          state.current[currentPhase],
-          125 + 45 * state.currentMagnitude
-        );
-        const color = colorVar(associated);
-        const lp = labelPos(point, true);
+      phases.forEach(phase => {
+        const length = R * iNorm(phase);
+        if (length < 1) return;
+        const element = isActiveElement(phase);
+        const color = element ? colorVar(phase) : 'var(--muted)';
+        const marker = element ? `arrow${phase}` : 'arrowMuted';
+        const point = phasorPoint(state.current[phase], length);
+        const label = labelPos(point, true);
+        const text = element
+          ? `I${phase.toLowerCase()}`
+          : `I${phase.toLowerCase()} · no element`;
 
         markup += `
-          <g data-kind="current" data-phase="${currentPhase}" style="cursor:grab">
-            <line x1="${cx}" y1="${cy}" x2="${point.x}" y2="${point.y}"
+          <g data-kind="current" data-phase="${phase}" style="cursor:grab"
+             opacity="${element ? emphasis(phase) : 0.45}">
+            <line x1="${CX}" y1="${CY}" x2="${point.x}" y2="${point.y}"
                   stroke="${color}" stroke-width="4" stroke-dasharray="11 7"
-                  marker-end="url(#arrow${associated})"></line>
+                  marker-end="url(#${marker})"></line>
             <circle cx="${point.x}" cy="${point.y}" r="20" fill="transparent"></circle>
             <circle cx="${point.x}" cy="${point.y}" r="6" fill="${color}"></circle>
-            <text x="${lp.x}" y="${lp.y}" fill="${color}"
-                  font-size="15" font-weight="600"
-                  text-anchor="${lp.anchor}">I${currentPhase}→V${associated}</text>
+            <text x="${label.x}" y="${label.y}" fill="${color}" font-size="14"
+                  font-weight="600" text-anchor="${label.anchor}">${text}</text>
           </g>
         `;
       });
+
+      markup += resultantMarkup(result);
+      markup += `<circle cx="${CX}" cy="${CY}" r="5" fill="var(--text)"></circle>`;
+
+      if (state.wiring === 'openDelta') {
+        markup += `
+          <text x="${CX}" y="${CY + 34}" text-anchor="middle" fill="var(--muted)"
+                font-size="11">no Vb — 2-element metering</text>
+        `;
+      }
 
       markup += legendMarkup();
       $('visualContent').innerHTML = markup;
     }
+
+    /* ── Sine view ───────────────────────────────────────────── */
 
     function wavePath(angle, amplitude, centerY, startX, width) {
       let path = '';
@@ -651,13 +1230,15 @@
     }
 
     function drawSine() {
+      $('visual').setAttribute('viewBox', VIEWBOX.sine);
       $('definitions').innerHTML = '';
 
       const left = 65;
       const width = 790;
       const centerY = 340;
-      const voltageAmplitude = 170;
-      const currentAmplitude = 110 * state.currentMagnitude;
+      const voltageKeys = activeVoltages();
+      const vNorm = normalizer(state.vMag, voltageKeys);
+      const iNorm = normalizer(state.iMag, phases);
 
       let markup = '';
 
@@ -665,8 +1246,8 @@
         const x = left + width * angle / 360;
         markup += `
           <line x1="${x}" y1="105" x2="${x}" y2="590" stroke="var(--border)"></line>
-          <text x="${x}" y="615" text-anchor="middle" fill="var(--muted)"
-                font-size="13">${angle}°</text>
+          <text x="${x}" y="613" text-anchor="middle" fill="var(--muted)"
+                font-size="13">${angle}&#176;</text>
         `;
       }
 
@@ -675,19 +1256,22 @@
                          stroke="var(--border)"></line>`;
       });
 
-      phases.forEach(phase => {
+      voltageKeys.forEach(phase => {
+        const amplitude = 170 * vNorm(phase);
         markup += `
-          <path d="${wavePath(state.voltage[phase], voltageAmplitude, centerY, left, width)}"
+          <path d="${wavePath(state.voltage[phase], amplitude, centerY, left, width)}"
                 fill="none" stroke="${colorVar(phase)}" stroke-width="4"></path>
         `;
       });
 
-      phases.forEach(currentPhase => {
-        const associated = state.map[currentPhase];
+      phases.forEach(phase => {
+        const amplitude = 110 * iNorm(phase);
+        const element = isActiveElement(phase);
         markup += `
-          <path d="${wavePath(state.current[currentPhase], currentAmplitude, centerY, left, width)}"
-                fill="none" stroke="${colorVar(associated)}" stroke-width="3"
-                stroke-dasharray="12 8"></path>
+          <path d="${wavePath(state.current[phase], amplitude, centerY, left, width)}"
+                fill="none" stroke="${element ? colorVar(phase) : 'var(--muted)'}"
+                stroke-width="3" stroke-dasharray="12 8"
+                opacity="${element ? 1 : 0.45}"></path>
         `;
       });
 
@@ -695,44 +1279,43 @@
       $('visualContent').innerHTML = markup;
     }
 
+    /* ── 3D view ─────────────────────────────────────────────── */
+
     function projectedPoint(z, y, lane) {
       const angle = rad(state.perspective);
-      const originX = 100;
-      const originY = 455;
-
       return {
-        x: originX + z * Math.cos(angle),
-        y: originY - lane - y - z * Math.sin(angle) * 0.38
+        x: 100 + z * Math.cos(angle),
+        y: 445 - lane - y - z * Math.sin(angle) * 0.22
       };
     }
 
     function threeDPath(angle, amplitude, lane) {
       let path = '';
-
       for (let step = 0; step <= 180; step++) {
         const fraction = step / 180;
         const z = 760 * fraction;
-        const y = Math.sin(
-          rad(360 * fraction + angle + state.rotation)
-        ) * amplitude;
+        const y = Math.sin(rad(360 * fraction + angle + state.rotation)) * amplitude;
         const point = projectedPoint(z, y, lane);
         path += `${step === 0 ? 'M' : 'L'} ${point.x} ${point.y} `;
       }
-
       return path;
     }
 
     function drawThreeD() {
+      $('visual').setAttribute('viewBox', VIEWBOX.threeD);
       $('definitions').innerHTML = '';
 
-      const lanes = { A: 165, B: 0, C: -165 };
+      const lanes = { A: 115, B: 0, C: -115 };
+      const voltageKeys = activeVoltages();
+      const vNorm = normalizer(state.vMag, voltageKeys);
+      const iNorm = normalizer(state.iMag, phases);
+
       let markup = '';
 
       for (let index = 0; index <= 6; index++) {
         const z = 760 * index / 6;
-        const top = projectedPoint(z, 0, 220);
-        const bottom = projectedPoint(z, 0, -220);
-
+        const top = projectedPoint(z, 0, 150);
+        const bottom = projectedPoint(z, 0, -150);
         markup += `
           <line x1="${top.x}" y1="${top.y}" x2="${bottom.x}" y2="${bottom.y}"
                 stroke="var(--border)"></line>
@@ -743,20 +1326,34 @@
         const lane = lanes[phase];
         const start = projectedPoint(0, 0, lane);
         const end = projectedPoint(760, 0, lane);
+        const element = isActiveElement(phase);
+        const hasVoltage = isActiveV(phase);
 
         markup += `
           <line x1="${start.x}" y1="${start.y}" x2="${end.x}" y2="${end.y}"
                 stroke="var(--border)"></line>
-          <path d="${threeDPath(state.voltage[phase], 70, lane)}"
-                fill="none" stroke="${colorVar(phase)}" stroke-width="4"></path>
-          <path d="${threeDPath(state.current[phase], 48 * state.currentMagnitude, lane)}"
-                fill="none" stroke="${colorVar(state.map[phase])}" stroke-width="3"
-                stroke-dasharray="12 8"></path>
-          <text x="${start.x + 8}" y="${start.y - 82}" fill="${colorVar(phase)}"
-                font-size="16" font-weight="600">V${phase}</text>
-          <text x="${start.x + 8}" y="${start.y - 62}"
-                fill="${colorVar(state.map[phase])}" font-size="14">
-            I${phase}→V${state.map[phase]}
+        `;
+
+        if (hasVoltage) {
+          markup += `
+            <path d="${threeDPath(state.voltage[phase], 55 * vNorm(phase), lane)}"
+                  fill="none" stroke="${colorVar(phase)}" stroke-width="4"></path>
+          `;
+        }
+
+        markup += `
+          <path d="${threeDPath(state.current[phase], 40 * iNorm(phase), lane)}"
+                fill="none" stroke="${element ? colorVar(phase) : 'var(--muted)'}"
+                stroke-width="3" stroke-dasharray="12 8"
+                opacity="${element ? 1 : 0.45}"></path>
+          <text x="${start.x + 8}" y="${start.y - 74}"
+                fill="${hasVoltage ? colorVar(phase) : 'var(--muted)'}"
+                font-size="15" font-weight="600">
+            ${hasVoltage ? vLabelOf(phase) : 'no Vb'}
+          </text>
+          <text x="${start.x + 8}" y="${start.y - 56}"
+                fill="${element ? colorVar(phase) : 'var(--muted)'}" font-size="13">
+            I${phase.toLowerCase()}${element ? ` &rarr; ${vLabelOf(state.map[phase])}` : ' · no element'}
           </text>
         `;
       });
@@ -765,16 +1362,19 @@
       $('visualContent').innerHTML = markup;
     }
 
-    function drawVisualization() {
-      if (state.activeView === 'phasor') drawPhasor();
+    /* ── Render ──────────────────────────────────────────────── */
+
+    function drawVisualization(result) {
+      if (state.activeView === 'phasor') drawPhasor(result);
       else if (state.activeView === 'sine') drawSine();
       else drawThreeD();
     }
 
     function render() {
-      updateMetrics();
+      const result = calculate();
+      updateMetrics(result);
       updateControls();
-      drawVisualization();
+      drawVisualization(result);
     }
 
     function setView(view) {
@@ -787,8 +1387,10 @@
 
     function selectControl(phase) {
       state.activePhase = phase;
-      updateControls();
+      render();
     }
+
+    /* ── Dragging ────────────────────────────────────────────── */
 
     function pointerAngle(event) {
       const svg = $('visual');
@@ -800,7 +1402,7 @@
       if (!matrix) return 0;
 
       const local = point.matrixTransform(matrix.inverse());
-      return normalize(deg(Math.atan2(355 - local.y, local.x - 450)));
+      return normalize(deg(Math.atan2(CY - local.y, local.x - CX)));
     }
 
     $('visual').addEventListener('pointerdown', event => {
@@ -810,10 +1412,7 @@
       if (!group) return;
 
       event.preventDefault();
-      state.dragging = {
-        kind: group.dataset.kind,
-        phase: group.dataset.phase
-      };
+      state.dragging = { kind: group.dataset.kind, phase: group.dataset.phase };
       $('visual').setPointerCapture(event.pointerId);
     });
 
@@ -821,12 +1420,8 @@
       if (!state.dragging || state.activeView !== 'phasor') return;
 
       const angle = pointerAngle(event);
-
-      if (state.dragging.kind === 'voltage') {
-        state.voltage[state.dragging.phase] = angle;
-      } else {
-        state.current[state.dragging.phase] = angle;
-      }
+      if (state.dragging.kind === 'voltage') state.voltage[state.dragging.phase] = angle;
+      else state.current[state.dragging.phase] = angle;
 
       render();
     });
@@ -834,7 +1429,6 @@
     function stopDrag(event) {
       if (!state.dragging) return;
       state.dragging = null;
-
       try {
         $('visual').releasePointerCapture(event.pointerId);
       } catch (_) {}
@@ -843,22 +1437,38 @@
     $('visual').addEventListener('pointerup', stopDrag);
     $('visual').addEventListener('pointercancel', stopDrag);
 
+    /* ── Event listeners ─────────────────────────────────────── */
+
     phases.forEach(phase => {
       $('open' + phase).addEventListener('click', () => selectControl(phase));
     });
 
     $('openGeneral').addEventListener('click', () => selectControl('general'));
 
-    $('voltageAngle').addEventListener('input', () => {
-      const voltagePhase = state.map[state.activePhase];
-      state.voltage[voltagePhase] = normalize($('voltageAngle').value);
-      render();
-    });
+    function bindAngle(sliderId, numberId, store) {
+      const commit = value => {
+        if (!Number.isFinite(value)) return;
+        store[state.activePhase] = fromDisplayAngle(value);
+        render();
+      };
+      $(sliderId).addEventListener('input', () => commit(Number($(sliderId).value)));
+      $(numberId).addEventListener('input', () => commit(Number($(numberId).value)));
+    }
 
-    $('currentAngle').addEventListener('input', () => {
-      state.current[state.activePhase] = normalize($('currentAngle').value);
-      render();
-    });
+    bindAngle('voltageAngle', 'voltageAngleNum', state.voltage);
+    bindAngle('currentAngle', 'currentAngleNum', state.current);
+
+    function bindMagnitude(inputId, store) {
+      $(inputId).addEventListener('input', () => {
+        const value = Number($(inputId).value);
+        if (!Number.isFinite(value) || value < 0) return;
+        store[state.activePhase] = value;
+        render();
+      });
+    }
+
+    bindMagnitude('voltageMag', state.vMag);
+    bindMagnitude('currentMag', state.iMag);
 
     $('association').addEventListener('change', () => {
       enforcePermutation(state.activePhase, $('association').value);
@@ -866,31 +1476,59 @@
     });
 
     $('flipCurrent').addEventListener('click', () => {
-      state.current[state.activePhase] = normalize(
-        state.current[state.activePhase] + 180
-      );
+      state.current[state.activePhase] = normalize(state.current[state.activePhase] + 180);
       render();
     });
 
     $('setBalanced').addEventListener('click', () => {
-      state.voltage = { A: 0, B: 240, C: 120 };
-
-      const delta = signedAngle(
-        state.voltage[state.map[state.activePhase]] -
-        state.current[state.activePhase]
-      );
-
-      phases.forEach(phase => {
-        state.current[phase] = normalize(
-          state.voltage[state.map[phase]] - delta
-        );
-      });
-
+      applyBalanced(displacementAngle());
       render();
     });
 
-    $('currentMagnitude').addEventListener('input', () => {
-      state.currentMagnitude = Number($('currentMagnitude').value);
+    function magnitudesAreEven() {
+      const voltageKeys = activeVoltages();
+      const even = (values, keys) => {
+        const max = Math.max(...keys.map(key => values[key]));
+        const min = Math.min(...keys.map(key => values[key]));
+        return max < 1e-12 || (max - min) / max < 0.005;
+      };
+      return even(state.vMag, voltageKeys) && even(state.iMag, phases);
+    }
+
+    $('wiring').addEventListener('change', () => {
+      // Preserve the operating point across a mode change when the set is
+      // balanced, so the two meters can be compared directly. Real, unbalanced
+      // data is never rewritten.
+      const rebalance = magnitudesAreEven();
+      const theta = displacementAngle();
+      state.wiring = $('wiring').value;
+      repairMap();
+      if (rebalance) applyBalanced(theta);
+      render();
+    });
+
+    $('sequence').addEventListener('change', () => {
+      state.sequence = $('sequence').value;
+      render();
+    });
+
+    $('reverseSequence').addEventListener('click', () => {
+      reverseSequence();
+      render();
+    });
+
+    $('angleInput').addEventListener('change', () => {
+      state.angleInput = $('angleInput').value;
+      render();
+    });
+
+    $('units').addEventListener('change', () => {
+      state.units = $('units').value;
+      render();
+    });
+
+    $('vBasis').addEventListener('change', () => {
+      state.vBasis = $('vBasis').value;
       render();
     });
 
@@ -900,13 +1538,16 @@
     });
 
     $('reset').addEventListener('click', () => {
-      state.voltage = { A: 0, B: 240, C: 120 };
-      state.current = { A: 272, B: 152, C: 32 };
       state.map = { A: 'A', B: 'B', C: 'C' };
-      state.currentMagnitude = 1;
+      phases.forEach(phase => {
+        state.vMag[phase] = 1;
+        state.iMag[phase] = 1;
+      });
       state.perspective = 30;
       state.rotation = 0;
       state.activePhase = 'A';
+      repairMap();
+      applyBalanced(30);
       render();
     });
 
@@ -919,9 +1560,8 @@
         state.frame = null;
         return;
       }
-
       state.rotation = normalize(state.rotation + 1.5);
-      drawVisualization();
+      drawVisualization(calculate());
       state.frame = requestAnimationFrame(animateFrame);
     }
 
@@ -929,6 +1569,7 @@
       if ($('animate').checked && !state.frame) animateFrame();
     });
 
+    repairMap();
     render();
   </script>
 </body>
