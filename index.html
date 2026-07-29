@@ -48,6 +48,14 @@
       background: var(--panel);
       color: var(--text);
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      /* iOS fires double-tap-to-zoom on any tap target. `manipulation` drops
+         that gesture while keeping pinch-zoom and scrolling, unlike
+         user-scalable=no, which Safari has ignored since iOS 10. */
+      touch-action: manipulation;
+    }
+
+    button, select, input, label, .phase-tabs, .tabs, .controls-area {
+      touch-action: manipulation;
     }
 
     button, select, input {
@@ -61,6 +69,9 @@
       color: var(--text);
       padding: 7px 11px;
       cursor: pointer;
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
     }
 
     button:focus-visible,
