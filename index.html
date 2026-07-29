@@ -548,7 +548,7 @@
       vMag: { A: 1, B: 1, C: 1 },
       iMag: { A: 1, B: 1, C: 1 },
       map: { A: 'A', B: 'B', C: 'C' },      // element -> voltage input
-      angleInput: 'lead',                   // UI only
+      angleInput: 'lag',                    // UI only; the 469 uses lag only
       vBasis: 'lineLine',                   // open delta only: how vMag was entered
       units: 'pu',                          // 'pu' | 'va'
       perspective: 30,
@@ -681,7 +681,7 @@
        whole working set is stored, not only the configuration. Writes are
        debounced because render() runs on every drag frame. */
 
-    const STORE_KEY = 'powerviz.v1';
+    const STORE_KEY = 'powerviz.v2';
     let saveTimer = null;
 
     function scheduleSave() {
@@ -1120,7 +1120,9 @@
 
     function rotationMarkup() {
       // Phasors always turn counter-clockwise; the sequence is the order in
-      // which they pass the reference, so only the label changes.
+      // which they pass the reference, so only the label changes. In lag
+      // convention the ring numbers run the opposite way, hence the caption.
+      const lag = state.angleInput === 'lag';
       const radius = 248;
       const start = phasorPoint(250, radius);
       const end = phasorPoint(290, radius);
@@ -1129,7 +1131,10 @@
               fill="none" stroke="var(--muted)" stroke-width="2"
               marker-end="url(#rotationArrow)"></path>
         <text x="${end.x + 14}" y="${end.y + 4}" fill="var(--muted)" font-size="12">
-          Rotation ${state.sequence}
+          Phase rotation ${state.sequence}
+        </text>
+        <text x="${CX - R - 27}" y="${CY + 239}" fill="var(--muted)" font-size="11">
+          ${lag ? 'lag angles · clockwise' : 'lead angles · counter-clockwise'}
         </text>
       `;
     }
