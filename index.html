@@ -141,7 +141,8 @@
     }
 
     .visual-area {
-      position: relative;
+      display: flex;
+      flex-direction: column;
       min-height: 0;
       overflow: hidden;
       border-bottom: 1px solid var(--border);
@@ -149,22 +150,21 @@
 
     .visual-surface {
       display: block;
+      flex: 1;
       width: 100%;
-      height: 100%;
+      min-height: 0;
       touch-action: none;
     }
 
+    /* In normal flow, not overlaying the chart — an absolutely positioned bar
+       hid the top of the phasor ring. */
     .metric-bar {
-      position: absolute;
-      z-index: 5;
-      top: 6px;
-      left: 7px;
-      right: 7px;
+      flex: none;
+      margin: 6px 7px 0;
       padding: 3px;
       border: 1px solid var(--border);
       border-radius: 11px;
-      background: color-mix(in srgb, var(--card) 92%, transparent);
-      backdrop-filter: blur(7px);
+      background: var(--card);
     }
 
     .metric-grid {
@@ -541,15 +541,15 @@
        selector converts only at the UI boundary. */
 
     const state = {
-      wiring: 'wye',                        // 'wye' | 'openDelta'
+      wiring: 'openDelta',                  // 'wye' | 'openDelta'
       sequence: 'ABC',                      // 'ABC' | 'ACB'
-      voltage: { A: 0, B: 240, C: 120 },
-      current: { A: 330, B: 210, C: 90 },
+      voltage: { A: 0, B: 240, C: 60 },
+      current: { A: 300, B: 180, C: 60 },
       vMag: { A: 1, B: 1, C: 1 },
       iMag: { A: 1, B: 1, C: 1 },
       map: { A: 'A', B: 'B', C: 'C' },      // element -> voltage input
       angleInput: 'lead',                   // UI only
-      vBasis: 'lineNeutral',                // open delta only: how vMag was entered
+      vBasis: 'lineLine',                   // open delta only: how vMag was entered
       units: 'pu',                          // 'pu' | 'va'
       perspective: 30,
       activePhase: 'A',
@@ -674,6 +674,80 @@
         state.map[element] = free;
         claimed.add(free);
       });
+    }
+
+    /* ── Persistence ─────────────────────────────────────────
+       Data typed off a relay screen on a phone should survive a reload, so the
+       whole working set is stored, not only the configuration. Writes are
+       debounced because render() runs on every drag frame. */
+
+    const STORE_KEY = 'powerviz.v1';
+    let saveTimer = null;
+
+    function scheduleSave() {
+      if (saveTimer) return;
+      saveTimer = setTimeout(() => {
+        saveTimer = null;
+        try {
+          localStorage.setItem(STORE_KEY, JSON.stringify({
+            wiring: state.wiring, sequence: state.sequence, map: state.map,
+            voltage: state.voltage, current: state.current,
+            vMag: state.vMag, iMag: state.iMag,
+            angleInput: state.angleInput, vBasis: state.vBasis,
+            units: state.units, perspective: state.perspective,
+            activeView: state.activeView, activePhase: state.activePhase
+          }));
+        } catch (_) {}
+      }, 250);
+    }
+
+    function loadState() {
+      let saved = null;
+      try {
+        saved = JSON.parse(localStorage.getItem(STORE_KEY) || 'null');
+      } catch (_) {}
+      if (!saved || typeof saved !== 'object') return;
+
+      // Every field is validated, so a stale or corrupt blob degrades to the
+      // defaults rather than breaking the app.
+      const choice = (key, allowed) => {
+        if (allowed.includes(saved[key])) state[key] = saved[key];
+      };
+      choice('wiring', Object.keys(WIRING));
+      choice('sequence', ['ABC', 'ACB']);
+      choice('angleInput', ['lead', 'lag']);
+      choice('vBasis', ['lineNeutral', 'lineLine']);
+      choice('units', ['pu', 'va']);
+      choice('activeView', ['phasor', 'sine', '3d']);
+      choice('activePhase', ['A', 'B', 'C', 'general']);
+
+      if (Number.isFinite(saved.perspective)) {
+        state.perspective = Math.min(45, Math.max(10, saved.perspective));
+      }
+
+      ['voltage', 'current'].forEach(field => {
+        const from = saved[field];
+        if (!from || typeof from !== 'object') return;
+        phases.forEach(phase => {
+          const value = Number(from[phase]);
+          if (Number.isFinite(value)) state[field][phase] = normalize(value);
+        });
+      });
+
+      ['vMag', 'iMag'].forEach(field => {
+        const from = saved[field];
+        if (!from || typeof from !== 'object') return;
+        phases.forEach(phase => {
+          const value = Number(from[phase]);
+          if (Number.isFinite(value) && value >= 0) state[field][phase] = value;
+        });
+      });
+
+      if (saved.map && typeof saved.map === 'object') {
+        phases.forEach(phase => {
+          if (phases.includes(saved.map[phase])) state.map[phase] = saved.map[phase];
+        });
+      }
     }
 
     /* ── Angle entry convention ──────────────────────────────
@@ -913,9 +987,9 @@
     // Each view frames its own content, so none of them waste the panel on
     // empty margin.
     const VIEWBOX = {
-      phasor: '150 128 615 528',
+      phasor: '150 140 570 516',
       sine: '40 92 840 568',
-      threeD: '60 100 830 560'
+      threeD: '60 140 830 520'
     };
 
     function phasorPoint(angle, length) {
@@ -1006,10 +1080,10 @@
       // is a lagging current and contributes +Q. The quadrant labels follow that
       // geometry rather than the textbook P-Q plane.
       const sectors = [
-        { from: 270, to: 360, at: 335, sign: '+P +Q', text: 'import · lag' },
-        { from: 0, to: 90, at: 25, sign: '+P −Q', text: 'import · lead' },
-        { from: 90, to: 180, at: 155, sign: '−P −Q', text: 'export · lead' },
-        { from: 180, to: 270, at: 205, sign: '−P +Q', text: 'export · lag' }
+        { from: 270, to: 360, at: 315, sign: '+P +Q', text: 'import · lag' },
+        { from: 0, to: 90, at: 45, sign: '+P −Q', text: 'import · lead' },
+        { from: 90, to: 180, at: 135, sign: '−P −Q', text: 'export · lead' },
+        { from: 180, to: 270, at: 225, sign: '−P +Q', text: 'export · lag' }
       ];
 
       let markup = '';
@@ -1186,7 +1260,7 @@
         const label = labelPos(point, true);
         const text = element
           ? `I${phase.toLowerCase()}`
-          : `I${phase.toLowerCase()} · no element`;
+          : `I${phase.toLowerCase()} (unused)`;
 
         markup += `
           <g data-kind="current" data-phase="${phase}" style="cursor:grab"
@@ -1375,6 +1449,7 @@
       updateMetrics(result);
       updateControls();
       drawVisualization(result);
+      scheduleSave();
     }
 
     function setView(view) {
@@ -1569,8 +1644,9 @@
       if ($('animate').checked && !state.frame) animateFrame();
     });
 
+    loadState();
     repairMap();
-    render();
+    setView(state.activeView);
   </script>
 </body>
 </html>
