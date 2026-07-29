@@ -1151,14 +1151,12 @@
         const end = phasorPoint(from - delta, radius);
         const sweep = delta >= 0 ? 1 : 0;
         const mid = phasorPoint(from - delta / 2, radius + 12);
-        const opacity = state.activePhase === element || state.activePhase === 'general' ? 1 : 0.4;
 
         markup += `
           <path d="M ${start.x} ${start.y} A ${radius} ${radius} 0 0 ${sweep} ${end.x} ${end.y}"
-                fill="none" stroke="${colorVar(element)}" stroke-width="2"
-                opacity="${opacity}"></path>
+                fill="none" stroke="${colorVar(element)}" stroke-width="2"></path>
           <text x="${mid.x}" y="${mid.y}" text-anchor="middle" fill="${colorVar(element)}"
-                font-size="12" font-weight="600" opacity="${opacity}">
+                font-size="12" font-weight="600">
             ${Math.abs(delta).toFixed(1)}&#176;
           </text>
         `;
@@ -1233,17 +1231,13 @@
       markup += rotationMarkup();
       markup += elementArcMarkup(result);
 
-      const emphasis = key =>
-        state.activePhase === 'general' || state.activePhase === key ? 1 : 0.35;
-
       voltageKeys.forEach(phase => {
         const length = R * vNorm(phase);
         if (length < 1) return;
         const point = phasorPoint(state.voltage[phase], length);
         const label = labelPos(point, false);
         markup += `
-          <g data-kind="voltage" data-phase="${phase}" style="cursor:grab"
-             opacity="${emphasis(phase)}">
+          <g data-kind="voltage" data-phase="${phase}" style="cursor:grab">
             <line x1="${CX}" y1="${CY}" x2="${point.x}" y2="${point.y}"
                   stroke="${colorVar(phase)}" stroke-width="5"
                   marker-end="url(#arrow${phase})"></line>
@@ -1269,7 +1263,7 @@
 
         markup += `
           <g data-kind="current" data-phase="${phase}" style="cursor:grab"
-             opacity="${element ? emphasis(phase) : 0.45}">
+             opacity="${element ? 1 : 0.45}">
             <line x1="${CX}" y1="${CY}" x2="${point.x}" y2="${point.y}"
                   stroke="${color}" stroke-width="4" stroke-dasharray="11 7"
                   marker-end="url(#${marker})"></line>
